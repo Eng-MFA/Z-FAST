@@ -1,0 +1,22 @@
+{
+    "version": 2,
+    "buildCommand": "echo 'No build needed'",
+    "outputDirectory": "public",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*).(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400, immutable"
+                }
+            ]
+        }
+    ]
+}

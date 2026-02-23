@@ -2,7 +2,7 @@
    Z-FAST — Main Application JavaScript
    ============================================================ */
 
-const API = '';  // Same origin
+const API = (typeof window !== 'undefined' && window.ZFAST_API) ? window.ZFAST_API : '';
 
 // ── Utility ────────────────────────────────────────────────
 const $ = (s, ctx = document) => ctx.querySelector(s);

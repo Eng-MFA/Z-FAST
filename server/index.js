@@ -21,18 +21,21 @@ app.use((req, res, next) => {
 });
 
 // ── CORS ─────────────────────────────────────────────────────
-const allowedOrigins = process.env.ALLOWED_ORIGIN
-    ? [process.env.ALLOWED_ORIGIN]
+// ALLOWED_ORIGIN = your Vercel frontend URL (e.g. https://z-fast.vercel.app)
+const rawOrigins = process.env.ALLOWED_ORIGIN || '';
+const allowedOrigins = rawOrigins
+    ? rawOrigins.split(',').map(o => o.trim())
     : ['http://localhost:3000', 'http://localhost:5500'];
 
 app.use(cors({
     origin: isProd
         ? (origin, cb) => {
-            // In production, allow same-origin (no origin header) and configured origins
+            // Allow: same-origin requests (no origin header), and configured origins
             if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+            console.warn('CORS blocked:', origin);
             cb(new Error('Not allowed by CORS'));
         }
-        : true,   // In dev, allow everything
+        : true,
     credentials: true,
 }));
 
