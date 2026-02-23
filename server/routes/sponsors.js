@@ -3,28 +3,33 @@ const router = express.Router();
 const db = require('../db');
 const { requireAuth } = require('./auth');
 
-router.get('/', (req, res) => {
-    res.json(db.prepare('SELECT * FROM sponsors ORDER BY display_order').all());
+router.get('/', async (req, res) => {
+    try { res.json(await db.prepare('SELECT * FROM sponsors ORDER BY display_order').all()); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
     const { name, logo, website, tier, display_order } = req.body;
-    const result = db.prepare(
-        'INSERT INTO sponsors (name, logo, website, tier, display_order) VALUES (?, ?, ?, ?, ?)'
-    ).run(name, logo || '', website || '#', tier || 'silver', display_order || 0);
-    res.status(201).json({ id: result.lastInsertRowid });
+    try {
+        const r = await db.prepare(
+            'INSERT INTO sponsors (name,logo,website,tier,display_order) VALUES (?,?,?,?,?)'
+        ).run(name, logo || '', website || '#', tier || 'silver', display_order || 0);
+        res.status(201).json({ id: r.lastInsertRowid });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
     const { name, logo, website, tier, display_order } = req.body;
-    db.prepare('UPDATE sponsors SET name=?, logo=?, website=?, tier=?, display_order=? WHERE id=?')
-        .run(name, logo, website, tier, display_order ?? 0, req.params.id);
-    res.json({ success: true });
+    try {
+        await db.prepare('UPDATE sponsors SET name=?,logo=?,website=?,tier=?,display_order=? WHERE id=?')
+            .run(name, logo, website, tier, display_order ?? 0, req.params.id);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.delete('/:id', requireAuth, (req, res) => {
-    db.prepare('DELETE FROM sponsors WHERE id = ?').run(req.params.id);
-    res.json({ success: true });
+router.delete('/:id', requireAuth, async (req, res) => {
+    try { await db.prepare('DELETE FROM sponsors WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;

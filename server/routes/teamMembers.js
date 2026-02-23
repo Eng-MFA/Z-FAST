@@ -3,36 +3,42 @@ const router = express.Router();
 const db = require('../db');
 const { requireAuth } = require('./auth');
 
-router.get('/', (req, res) => {
-    const members = db.prepare('SELECT * FROM team_members ORDER BY department, display_order').all();
-    res.json(members);
+router.get('/', async (req, res) => {
+    try { res.json(await db.prepare('SELECT * FROM team_members ORDER BY department, display_order').all()); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.get('/:id', (req, res) => {
-    const member = db.prepare('SELECT * FROM team_members WHERE id = ?').get(req.params.id);
-    if (!member) return res.status(404).json({ error: 'Not found' });
-    res.json(member);
+router.get('/:id', async (req, res) => {
+    try {
+        const m = await db.prepare('SELECT * FROM team_members WHERE id = ?').get(req.params.id);
+        if (!m) return res.status(404).json({ error: 'Not found' });
+        res.json(m);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
     const { name, role, department, bio, image, linkedin, display_order } = req.body;
-    const result = db.prepare(
-        'INSERT INTO team_members (name, role, department, bio, image, linkedin, display_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
-    ).run(name, role, department || 'Technical', bio || '', image || '', linkedin || '', display_order || 0);
-    res.status(201).json({ id: result.lastInsertRowid });
+    try {
+        const r = await db.prepare(
+            'INSERT INTO team_members (name,role,department,bio,image,linkedin,display_order) VALUES (?,?,?,?,?,?,?)'
+        ).run(name, role, department || 'Technical', bio || '', image || '', linkedin || '', display_order || 0);
+        res.status(201).json({ id: r.lastInsertRowid });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
     const { name, role, department, bio, image, linkedin, display_order } = req.body;
-    db.prepare(
-        'UPDATE team_members SET name=?, role=?, department=?, bio=?, image=?, linkedin=?, display_order=? WHERE id=?'
-    ).run(name, role, department, bio, image, linkedin, display_order ?? 0, req.params.id);
-    res.json({ success: true });
+    try {
+        await db.prepare(
+            'UPDATE team_members SET name=?,role=?,department=?,bio=?,image=?,linkedin=?,display_order=? WHERE id=?'
+        ).run(name, role, department, bio, image, linkedin, display_order ?? 0, req.params.id);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-router.delete('/:id', requireAuth, (req, res) => {
-    db.prepare('DELETE FROM team_members WHERE id = ?').run(req.params.id);
-    res.json({ success: true });
+router.delete('/:id', requireAuth, async (req, res) => {
+    try { await db.prepare('DELETE FROM team_members WHERE id=?').run(req.params.id); res.json({ success: true }); }
+    catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;
