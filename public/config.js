@@ -8,4 +8,4 @@
  * DO NOT commit your production URL if it contains secrets.
  * Update this file after getting your Railway URL.
  */
-window.ZFAST_API = '';  // ← Replace with Railway URL when deploying frontend to Vercel
+window.ZFAST_API = 'https://web-production-c67b3.up.railway.app';  // ← Replace with Railway URL when deploying frontend to Vercel
