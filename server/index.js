@@ -57,6 +57,9 @@ app.use('/uploads', express.static(uploadsDir));
 // ── Initialize DB ─────────────────────────────────────────────
 const db = require('./db');
 
+// ── Health Check (must be FIRST — no DB dependency) ─────────
+app.get('/api/health', (req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'development', ts: Date.now() }));
+
 // ── API Routes ────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/team-info', require('./routes/teamInfo'));
@@ -68,9 +71,6 @@ app.use('/api/car-specs', require('./routes/carSpecs'));
 app.use('/api/cars', require('./routes/cars'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/upload', require('./routes/upload'));
-
-// ── Health Check ──────────────────────────────────────────────
-app.get('/api/health', (req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' }));
 
 // ── SPA Fallback ──────────────────────────────────────────────
 app.get('*', (req, res) => {
