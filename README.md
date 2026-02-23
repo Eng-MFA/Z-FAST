@@ -15,11 +15,8 @@ Then open:
 
 ## Default Admin Credentials
 
-| Username | Password |
-|----------|----------|
-| `admin`  | `zfast2024` |
 
-> ⚠️ Change your password from the Admin Panel after first login.
+
 
 ## Project Structure
 
