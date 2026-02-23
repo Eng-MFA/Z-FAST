@@ -21,21 +21,25 @@ app.use((req, res, next) => {
 });
 
 // ── CORS ─────────────────────────────────────────────────────
-// ALLOWED_ORIGIN = your Vercel frontend URL (e.g. https://z-fast.vercel.app)
-const rawOrigins = process.env.ALLOWED_ORIGIN || '';
-const allowedOrigins = rawOrigins
-    ? rawOrigins.split(',').map(o => o.trim())
-    : ['http://localhost:3000', 'http://localhost:5500'];
+// Auto-allows: localhost (any port), *.vercel.app, and any URL in ALLOWED_ORIGIN env
+const extraOrigins = (process.env.ALLOWED_ORIGIN || '')
+    .split(',').map(o => o.trim()).filter(Boolean);
+
+function isAllowedOrigin(origin) {
+    if (!origin) return true;                                        // same-origin / server-to-server
+    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;  // local dev
+    if (/\.vercel\.app$/.test(origin)) return true;                 // any Vercel preview/prod URL
+    if (/\.railway\.app$/.test(origin)) return true;                // Railway itself
+    if (extraOrigins.includes(origin)) return true;                  // custom ALLOWED_ORIGIN
+    return false;
+}
 
 app.use(cors({
-    origin: isProd
-        ? (origin, cb) => {
-            // Allow: same-origin requests (no origin header), and configured origins
-            if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-            console.warn('CORS blocked:', origin);
-            cb(new Error('Not allowed by CORS'));
-        }
-        : true,
+    origin: (origin, cb) => {
+        if (isAllowedOrigin(origin)) return cb(null, true);
+        console.warn('🚫 CORS blocked:', origin);
+        cb(new Error('Not allowed by CORS'));
+    },
     credentials: true,
 }));
 
