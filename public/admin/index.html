@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Z-FAST Admin Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="admin.css" />
+</head>
+
+<body class="admin-body">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-box">
+            <div class="login-logo">Z-FAST</div>
+            <p class="login-sub">Admin Panel</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" placeholder="admin" required />
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required />
+                </div>
+                <div id="login-error" class="form-feedback error" style="display:none"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN SHELL (hidden until logged in) -->
+    <div id="admin-shell" class="admin-shell" style="display:none">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-logo">Z-FAST</div>
+            <nav class="sidebar-nav">
+                <button class="sidebar-btn active" data-panel="dashboard">📊 Dashboard</button>
+                <button class="sidebar-btn" data-panel="team-info">⚙️ Site Settings</button>
+                <button class="sidebar-btn" data-panel="cars">🏎️ Cars</button>
+                <button class="sidebar-btn" data-panel="hero-stats">📊 Hero Stats</button>
+                <button class="sidebar-btn" data-panel="team-members">👥 Team Members</button>
+                <button class="sidebar-btn" data-panel="sponsors">🤝 Sponsors</button>
+                <button class="sidebar-btn" data-panel="seasons">🏁 Seasons</button>
+                <button class="sidebar-btn" data-panel="news">📰 News</button>
+                <button class="sidebar-btn" data-panel="messages">✉️ Messages</button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="../index.html" class="sidebar-btn" target="_blank">🌐 View Site</a>
+                <button class="sidebar-btn" id="logout-btn">🔓 Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div id="toast" class="toast"></div>
+
+            <!-- DASHBOARD -->
+            <div id="panel-dashboard" class="panel active">
+                <div class="panel-header">
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="dashboard-cards" id="dashboard-cards">
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-members">-</div>
+                        <div class="dash-label">Team Members</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-sponsors">-</div>
+                        <div class="dash-label">Sponsors</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-seasons">-</div>
+                        <div class="dash-label">Seasons</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-news">-</div>
+                        <div class="dash-label">News Articles</div>
+                    </div>
+                    <div class="dash-card" id="dash-messages-card">
+                        <div class="dash-num" id="dash-messages">-</div>
+                        <div class="dash-label">Unread Messages</div>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <p style="color:var(--gray-300)">Welcome to the Z-FAST Admin Panel. Use the sidebar to manage your
+                        website content.<br /><strong style="color:var(--electric)">Default credentials: admin /
+                            zfast2024</strong> — Change your password in Settings.</p>
+                </div>
+            </div>
+
+            <!-- SITE SETTINGS -->
+            <div id="panel-team-info" class="panel">
+                <div class="panel-header">
+                    <h1>Site Settings</h1><button class="btn btn-primary" id="save-team-info">Save Changes</button>
+                </div>
+                <div class="panel-section" id="team-info-form"></div>
+            </div>
+
+            <!-- CARS -->
+            <div id="panel-cars" class="panel">
+                <div class="panel-header">
+                    <h1>Cars</h1><button class="btn btn-primary" id="add-car-btn">+ Add Car</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="cars-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Year</th>
+                                    <th>Specs</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cars-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HERO STATS -->
+            <div id="panel-hero-stats" class="panel">
+                <div class="panel-header">
+                    <h1>Hero Stats</h1><button class="btn btn-primary" id="save-hero-stats">Save Changes</button>
+                </div>
+                <div class="panel-section">
+                    <p style="color:var(--gray-300);margin-bottom:1.5rem">These are the 3 numbers displayed at the
+                        bottom of the Hero section (e.g. 2.8s / 80kW / 280kg).</p>
+                    <div id="hero-stats-form"></div>
+                </div>
+            </div>
+
+            <div id="panel-team-members" class="panel">
+                <div class="panel-header">
+                    <h1>Team Members</h1><button class="btn btn-primary" id="add-member-btn">+ Add Member</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPONSORS -->
+            <div id="panel-sponsors" class="panel">
+                <div class="panel-header">
+                    <h1>Sponsors</h1><button class="btn btn-primary" id="add-sponsor-btn">+ Add Sponsor</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="sponsors-table">
+                            <thead>
+                                <tr>
+                                    <th>Logo</th>
+                                    <th>Name</th>
+                                    <th>Tier</th>
+                                    <th>Website</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sponsors-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEASONS -->
+            <div id="panel-seasons" class="panel">
+                <div class="panel-header">
+                    <h1>Seasons</h1><button class="btn btn-primary" id="add-season-btn">+ Add Season</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="seasons-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Year</th>
+                                    <th>Title</th>
+                                    <th>Achievements</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seasons-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEWS -->
+            <div id="panel-news" class="panel">
+                <div class="panel-header">
+                    <h1>News</h1><button class="btn btn-primary" id="add-news-btn">+ Add Article</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="news-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="news-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MESSAGES -->
+            <div id="panel-messages" class="panel">
+                <div class="panel-header">
+                    <h1>Contact Messages</h1>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="messages-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="messages-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-backdrop" class="modal-backdrop" style="display:none">
+        <div class="modal-box" id="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal</h3>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-confirm">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>

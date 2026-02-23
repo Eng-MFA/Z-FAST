@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Database (persisted on server, not in git)
+data/
+
+# Uploaded files (managed on server)
+public/uploads/
+
+# Environment secrets
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
