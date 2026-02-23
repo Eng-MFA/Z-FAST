@@ -2,7 +2,7 @@
    Z-FAST Admin Panel — JavaScript
    ============================================================ */
 
-const API = (typeof window !== 'undefined' && window.ZFAST_API) ? window.ZFAST_API : '..';
+const API = (typeof window !== 'undefined' && window.ZFAST_API) ? window.ZFAST_API : '';
 let token = localStorage.getItem('zfast_token') || '';
 
 // ── Utilities ───────────────────────────────────────────────
