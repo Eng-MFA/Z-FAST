@@ -1,12 +1,12 @@
-// Uses the built-in node:sqlite module (available in Node.js 22+)
-// No installation needed — zero native compilation!
+// Uses the built-in node:sqlite module (Node 22+ required)
+// Zero native compilation — pure built-in!
 const { DatabaseSync } = require('node:sqlite');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure data directory exists
-const dataDir = path.join(__dirname, '..', 'data');
+// Data directory: works locally AND on Railway volume (/app/data)
+const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new DatabaseSync(path.join(dataDir, 'zfast.db'));
@@ -234,5 +234,5 @@ if (!newsExists) {
   ].forEach(r => ins.run(...r));
 }
 
-console.log('✅ Database initialized (node:sqlite)');
+console.log('✅ Database initialized (better-sqlite3)');
 module.exports = db;
