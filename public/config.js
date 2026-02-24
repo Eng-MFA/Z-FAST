@@ -1,10 +1,9 @@
 /**
  * Z-FAST API Configuration
  *
- * Vercel proxies /api/* → Railway automatically (see vercel.json rewrites)
- * So we use an empty string = same-origin relative calls.
+ * On Vercel: empty string '' — Vercel proxies /api/* → Railway (see vercel.json)
+ * Locally:   set to 'http://localhost:3000' or Railway URL directly
  *
  * Railway Backend: https://web-production-c67b3.up.railway.app
- * Vercel Frontend: https://your-project.vercel.app
  */
-window.ZFAST_API = ' ';  // Empty = use Vercel proxy (/api/* → Railway)
+window.ZFAST_API = '';
