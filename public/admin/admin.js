@@ -314,6 +314,18 @@ window.editMember = async (id) => {
   setTimeout(() => bindUpload('member-img'), 100);
 };
 
+// --- Final deployment fixes ---
+if (document.querySelector('#save-hero-stats')) {
+  document.querySelector('#save-hero-stats').addEventListener('click', async () => {
+    const stats = {
+      hero_stats_members: $('#hero-stats-members')?.value || '',
+      hero_stats_experience: $('#hero-stats-experience')?.value || '',
+      hero_stats_projects: $('#hero-stats-projects')?.value || ''
+    };
+    try { await api('PUT', '/team-info', stats); toast('Stats saved!'); } catch { toast('Save failed', 'error'); }
+  });
+}
+
 window.deleteMember = async (id) => {
   if (!confirm('Delete this team member?')) return;
   try { await api('DELETE', `/team-members/${id}`); toast('Deleted!'); loadTeamMembers(); } catch (e) { toast(e.message, 'error'); }
