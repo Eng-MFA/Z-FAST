@@ -1,6 +1,6 @@
 {
   "name": "z-fast-website",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Z-FAST Electric Racing Team Website",
   "main": "server/index.js",
   "engines": {
