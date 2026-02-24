@@ -267,62 +267,7 @@ window.deleteCar = async (id) => {
   try { await api('DELETE', `/cars/${id}`); toast('Deleted!'); loadCars(); } catch (e) { toast(e.message, 'error'); }
 };
 
-// ── Hero Stats ────────────────────────────────────────────────
-async function loadHeroStats() {
-  const data = await api('GET', '/team-info');
-  if (!data) return;
-  const form = $('#hero-stats-form');
-  const stats = [
-    { n: 1, icon: '⚡', title: 'Stat 1' },
-    { n: 2, icon: '⚙️', title: 'Stat 2' },
-    { n: 3, icon: '🏗️', title: 'Stat 3' },
-  ];
-  form.innerHTML = stats.map(s => `
-    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem">
-      <div style="font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--electric);margin-bottom:1rem">
-        ${s.icon} ${s.title}
-        <span style="font-size:2rem;font-weight:900;color:var(--white);margin-left:1rem" id="hs-preview-${s.n}">${data['hero_stat_' + s.n + '_value'] || ''}${data['hero_stat_' + s.n + '_suffix'] || ''}</span>
-        <span style="font-size:0.8rem;color:var(--gray-300);margin-left:0.5rem" id="hs-lbl-preview-${s.n}">${data['hero_stat_' + s.n + '_label'] || ''}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
-        <div class="form-group" style="margin:0">
-          <label>Number Value</label>
-          <input id="hs-val-${s.n}" type="text" value="${data['hero_stat_' + s.n + '_value'] || ''}" oninput="updateHsPreview(${s.n})" />
-        </div>
-        <div class="form-group" style="margin:0">
-          <label>Suffix (unit)</label>
-          <input id="hs-suf-${s.n}" type="text" value="${data['hero_stat_' + s.n + '_suffix'] || ''}" oninput="updateHsPreview(${s.n})" placeholder="e.g. s, kW, kg" />
-        </div>
-        <div class="form-group" style="margin:0">
-          <label>Label</label>
-          <input id="hs-lbl-${s.n}" type="text" value="${data['hero_stat_' + s.n + '_label'] || ''}" oninput="updateHsLblPreview(${s.n})" placeholder="e.g. 0-100 km/h" />
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-window.updateHsPreview = (n) => {
-  const val = document.getElementById(`hs-val-${n}`)?.value || '';
-  const suf = document.getElementById(`hs-suf-${n}`)?.value || '';
-  const el = document.getElementById(`hs-preview-${n}`);
-  if (el) el.textContent = val + suf;
-};
-window.updateHsLblPreview = (n) => {
-  const lbl = document.getElementById(`hs-lbl-${n}`)?.value || '';
-  const el = document.getElementById(`hs-lbl-preview-${n}`);
-  if (el) el.textContent = lbl;
-};
-
-$('#save-hero-stats').addEventListener('click', async () => {
-  const updates = {};
-  for (let i = 1; i <= 3; i++) {
-    updates[`hero_stat_${i}_value`] = document.getElementById(`hs-val-${i}`)?.value || '';
-    updates[`hero_stat_${i}_suffix`] = document.getElementById(`hs-suf-${i}`)?.value || '';
-    updates[`hero_stat_${i}_label`] = document.getElementById(`hs-lbl-${i}`)?.value || '';
-  }
-  try { await api('PUT', '/team-info', updates); toast('✅ Hero Stats saved!'); } catch { toast('Save failed', 'error'); }
-});
+// (Hero Stats panel removed — stats are now managed via Site Settings)
 
 // ── Team Members ──────────────────────────────────────────────
 async function loadTeamMembers() {
