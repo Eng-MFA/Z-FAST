@@ -125,6 +125,22 @@ _db.serialize(() => {
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS about_slides (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image TEXT NOT NULL,
+    caption TEXT,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS season_gallery (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    season_id INTEGER NOT NULL,
+    image TEXT NOT NULL,
+    caption TEXT,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE
+  );
 `);
 
   // ── Seed Admin ──────────────────────────────────────────────

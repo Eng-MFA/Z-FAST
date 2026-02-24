@@ -26,10 +26,11 @@
         <span id="nav-logo-text" class="logo-text" style="display:none">Z-FAST</span>
       </a>
       <ul class="nav-links">
+        <li><a href="#about">About Us</a></li>
         <li><a href="#machine">The Machine</a></li>
         <li><a href="#team">Our Team</a></li>
-        <li><a href="#sponsorship">Sponsorship</a></li>
-        <li><a href="#seasons">Seasons</a></li>
+        <li><a href="#seasons">Achievements</a></li>
+        <li><a href="#sponsorship">Sponsorship & Partnership</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -54,24 +55,46 @@
         <a href="#machine" class="btn btn-primary" id="hero-cta-primary">Explore The Machine</a>
         <a href="#team" class="btn btn-secondary" id="hero-cta-secondary">Meet The Team</a>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <span class="hero-stat-num" id="stat-1-num" data-target="2.8" data-suffix="s">2.8s</span>
-          <span id="stat-1-label">0-100 km/h</span>
-        </div>
-        <div class="hero-stat">
-          <span class="hero-stat-num" id="stat-2-num" data-target="80" data-suffix="kW">80kW</span>
-          <span id="stat-2-label">Motor Power</span>
-        </div>
-        <div class="hero-stat">
-          <span class="hero-stat-num" id="stat-3-num" data-target="280" data-suffix="kg">280kg</span>
-          <span id="stat-3-label">Total Weight</span>
-        </div>
-      </div>
     </div>
     <div class="hero-scroll-hint">
       <div class="scroll-line"></div>
       <span>Scroll</span>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ===== ABOUT US ===== -->
+  <section id="about" class="section">
+    <div class="section-header reveal">
+      <span class="section-badge">Who We Are</span>
+      <h2>About <span class="accent">Us</span></h2>
+      <p id="about-subtitle">A passionate team of engineers and innovators driving the future of electric motorsport.
+      </p>
+    </div>
+    <div class="about-carousel-wrap reveal">
+      <button class="about-arrow about-arrow-prev" id="about-prev" aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <div class="about-slide-frame" id="about-frame">
+        <div class="about-slide-placeholder">
+          <div class="about-placeholder-icon">🏎️</div>
+          <p>About Us slides will appear here</p>
+        </div>
+      </div>
+      <button class="about-arrow about-arrow-next" id="about-next" aria-label="Next slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+          stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+    <div class="about-caption-area">
+      <p class="about-caption" id="about-caption"></p>
+      <div class="about-dots" id="about-dots"></div>
     </div>
   </section>
 
@@ -143,11 +166,32 @@
 
   <hr class="section-divider">
 
-  <!-- ===== SPONSORSHIP ===== -->
+  <!-- ===== ACHIEVEMENTS (was Seasons) ===== -->
+  <section id="seasons" class="section section-dark">
+    <div class="section-header reveal">
+      <span class="section-badge"
+        style="background:rgba(29,52,97,0.25);border-color:rgba(29,52,97,0.6);color:#6fa3f0">Our Journey</span>
+      <h2>Achievements <span class="accent">&amp; History</span></h2>
+      <p>Every season, a new chapter of innovation and performance.</p>
+    </div>
+    <div class="seasons-grid reveal" id="seasons-grid">
+      <!-- Loaded from API -->
+    </div>
+    <div class="section-header reveal" style="margin-top:5rem">
+      <h2>Latest <span class="accent">News</span></h2>
+    </div>
+    <div class="news-grid reveal" id="news-grid">
+      <!-- Loaded from API -->
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ===== SPONSORSHIP & PARTNERSHIP ===== -->
   <section id="sponsorship" class="section">
     <div class="section-header reveal">
       <span class="section-badge">Partnerships</span>
-      <h2>Partner with <span class="accent">Z-FAST</span></h2>
+      <h2>Sponsorship <span class="accent">&amp; Partnership</span></h2>
       <p id="sponsorship-subtitle">Drive Innovation, Shape the Future of Electric Racing.</p>
     </div>
     <div class="sponsor-benefits reveal">
@@ -164,12 +208,12 @@
       </div>
       <div class="benefit-card">
         <div class="benefit-icon">🌱</div>
-        <h3>CSR & Sustainability</h3>
+        <h3>CSR &amp; Sustainability</h3>
         <p>Align your brand with the future of clean, sustainable high-performance motorsport.</p>
       </div>
       <div class="benefit-card">
         <div class="benefit-icon">🔬</div>
-        <h3>R&D Collaboration</h3>
+        <h3>R&amp;D Collaboration</h3>
         <p>Collaborate on real engineering projects with our technical team and university research facilities.</p>
       </div>
     </div>
@@ -180,29 +224,8 @@
       </div>
     </div>
     <div class="sponsor-cta reveal">
-      <a href="#contact" class="btn btn-primary btn-large">Become a Sponsor</a>
+      <a href="#contact" class="btn btn-primary btn-large">Become a Partner</a>
       <p>Contact us to receive our full sponsorship package</p>
-    </div>
-  </section>
-
-  <hr class="section-divider">
-
-  <!-- ===== SEASONS & NEWS ===== -->
-  <section id="seasons" class="section section-dark">
-    <div class="section-header reveal">
-      <span class="section-badge"
-        style="background:rgba(29,52,97,0.25);border-color:rgba(29,52,97,0.6);color:#6fa3f0">Our Journey</span>
-      <h2>Seasons & <span class="accent">News</span></h2>
-      <p>Every season, a new chapter of innovation and performance.</p>
-    </div>
-    <div class="seasons-grid reveal" id="seasons-grid">
-      <!-- Loaded from API -->
-    </div>
-    <div class="section-header reveal" style="margin-top:5rem">
-      <h2>Latest <span class="accent">News</span></h2>
-    </div>
-    <div class="news-grid reveal" id="news-grid">
-      <!-- Loaded from API -->
     </div>
   </section>
 
@@ -294,15 +317,31 @@
         <p>Electric Racing Team</p>
       </div>
       <div class="footer-links">
+        <a href="#about">About Us</a>
         <a href="#machine">The Machine</a>
         <a href="#team">Our Team</a>
-        <a href="#sponsorship">Sponsorship</a>
-        <a href="#seasons">Seasons</a>
+        <a href="#seasons">Achievements</a>
+        <a href="#sponsorship">Sponsorship & Partnership</a>
         <a href="#contact">Contact</a>
       </div>
       <p class="footer-copy">© 2025 Z-FAST Racing Team. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- Season Gallery Modal -->
+  <div id="season-gallery-modal" class="sg-modal-backdrop" style="display:none">
+    <div class="sg-modal-box">
+      <button class="sg-modal-close" id="sg-close" aria-label="Close">✕</button>
+      <h3 class="sg-modal-title" id="sg-title"></h3>
+      <div class="sg-img-wrap">
+        <button class="sg-arrow sg-arrow-prev" id="sg-prev">‹</button>
+        <div class="sg-frame" id="sg-frame"></div>
+        <button class="sg-arrow sg-arrow-next" id="sg-next">›</button>
+      </div>
+      <p class="sg-caption" id="sg-caption"></p>
+      <div class="sg-dots" id="sg-dots"></div>
+    </div>
+  </div>
 
   <script src="config.js"></script>
   <script src="js/app.js"></script>

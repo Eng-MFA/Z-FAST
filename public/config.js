@@ -7,4 +7,4 @@
  * Railway Backend: https://web-production-c67b3.up.railway.app
  * Vercel Frontend: https://your-project.vercel.app
  */
-window.ZFAST_API = '';  // Empty = use Vercel proxy (/api/* → Railway)
+window.ZFAST_API = ' ';  // Empty = use Vercel proxy (/api/* → Railway)

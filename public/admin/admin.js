@@ -138,7 +138,7 @@ function loadPanel(name) {
     case 'dashboard': loadDashboard(); break;
     case 'team-info': loadTeamInfo(); break;
     case 'cars': loadCars(); break;
-    case 'hero-stats': loadHeroStats(); break;
+    case 'about': loadAboutSlides(); break;
     case 'team-members': loadTeamMembers(); break;
     case 'sponsors': loadSponsors(); break;
     case 'seasons': loadSeasons(); break;
@@ -435,6 +435,7 @@ async function loadSeasons() {
       <td style="max-width:200px;font-size:0.8rem;color:var(--gray-300)">${s.achievements || '—'}</td>
       <td><div class="action-btns">
         <button class="btn-edit" onclick="editSeason(${s.id})">Edit</button>
+        <button style="padding:.35rem .8rem;border-radius:8px;background:rgba(29,52,97,.3);border:1px solid rgba(29,52,97,.6);color:#6fa3f0;cursor:pointer;font-size:.8rem" onclick="manageSeasonGallery(${s.id}, '${s.title.replace(/'/g, "\\'")} – ${s.year}')">🖼 Gallery</button>
         <button class="btn-del" onclick="deleteSeason(${s.id})">Delete</button>
       </div></td>`;
     tbody.appendChild(tr);
@@ -557,6 +558,106 @@ window.markRead = async (id, btn) => {
 window.deleteMessage = async (id) => {
   if (!confirm('Delete this message?')) return;
   try { await api('DELETE', `/contact/${id}`); toast('Deleted!'); loadMessages(); } catch (e) { toast(e.message, 'error'); }
+};
+
+// ── About Us Slides ──────────────────────────────────────────
+async function loadAboutSlides() {
+  const slides = await api('GET', '/about');
+  const container = document.getElementById('panel-about');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="panel-header">
+      <h2>About Us Slides</h2>
+      <button class="btn-add" onclick="addAboutSlide()">+ Add Slide</button>
+    </div>
+    <div class="cards-grid" id="about-slides-list"></div>`;
+  const list = document.getElementById('about-slides-list');
+  if (!slides || slides.length === 0) {
+    list.innerHTML = '<p style="color:var(--gray-500)">No slides yet. Add your first one!</p>';
+    return;
+  }
+  slides.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'data-card';
+    card.innerHTML = `
+      <div class="card-img-preview">${s.image ? `<img src="${API}${s.image}" style="width:100%;height:120px;object-fit:cover;border-radius:8px" />` : '🖼️'}</div>
+      <p style="font-size:0.85rem;color:var(--gray-300);margin:.5rem 0">${s.caption || '—'}</p>
+      <div class="card-actions">
+        <button onclick="editAboutSlide(${s.id})">Edit</button>
+        <button class="btn-del" onclick="deleteAboutSlide(${s.id})">Delete</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+window.addAboutSlide = () => {
+  openModal('Add About Slide',
+    imageFieldHTML('') + `<div class="form-group"><label>Caption</label><input id="modal-caption" placeholder="Caption text..." /></div>`,
+    async () => {
+      const image = document.getElementById('modal-image').value;
+      if (!image) return toast('Please upload an image', 'error');
+      try { await api('POST', '/about', { image, caption: document.getElementById('modal-caption').value }); closeModal(); loadAboutSlides(); toast('Slide added!'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+  bindUpload('modal-image');
+};
+
+window.editAboutSlide = async (id) => {
+  const slides = await api('GET', '/about');
+  const s = slides.find(x => x.id === id); if (!s) return;
+  openModal('Edit About Slide',
+    imageFieldHTML(s.image) + `<div class="form-group"><label>Caption</label><input id="modal-caption" value="${s.caption || ''}" /></div>`,
+    async () => {
+      const image = document.getElementById('modal-image').value;
+      try { await api('PUT', `/about/${id}`, { image, caption: document.getElementById('modal-caption').value }); closeModal(); loadAboutSlides(); toast('Updated!'); }
+      catch (e) { toast(e.message, 'error'); }
+    });
+  bindUpload('modal-image');
+};
+
+window.deleteAboutSlide = async (id) => {
+  if (!confirm('Delete this slide?')) return;
+  try { await api('DELETE', `/about/${id}`); loadAboutSlides(); toast('Deleted!'); } catch (e) { toast(e.message, 'error'); }
+};
+
+// ── Season Gallery Management ─────────────────────────────────
+window.manageSeasonGallery = async (seasonId, seasonTitle) => {
+  const images = await api('GET', `/seasons/${seasonId}/gallery`);
+  const listHTML = (images && images.length > 0)
+    ? images.map(img => `
+      <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--card-border)">
+        ${img.image ? `<img src="${API}${img.image}" style="width:80px;height:55px;object-fit:cover;border-radius:6px" />` : '<span>🖼️</span>'}
+        <span style="flex:1;font-size:.85rem;color:var(--gray-300)">${img.caption || '—'}</span>
+        <button onclick="deleteSeasonGalleryImg(${seasonId},${img.id})" style="padding:.3rem .7rem;border-radius:6px;background:rgba(255,62,62,.15);border:1px solid rgba(255,62,62,.3);color:#ff4555;cursor:pointer">✕</button>
+      </div>`).join('')
+    : '<p style="color:var(--gray-500)">No images yet.</p>';
+
+  openModal(`Gallery: ${seasonTitle}`,
+    listHTML + `
+    <hr style="margin:1rem 0;border-color:var(--card-border)">
+    <h4 style="margin-bottom:.75rem;font-size:.9rem">Add New Image</h4>
+    ${imageFieldHTML('', 'sg-image')}
+    <div class="form-group"><label>Caption</label><input id="sg-caption-input" placeholder="Image caption..." /></div>`,
+    async () => {
+      const image = document.getElementById('sg-image').value;
+      if (!image) return toast('Please upload an image', 'error');
+      try {
+        await api('POST', `/seasons/${seasonId}/gallery`, { image, caption: document.getElementById('sg-caption-input').value });
+        toast('Image added!');
+        closeModal();
+        loadSeasons();
+      } catch (e) { toast(e.message, 'error'); }
+    });
+  bindUpload('sg-image');
+};
+
+window.deleteSeasonGalleryImg = async (seasonId, imgId) => {
+  if (!confirm('Delete this image?')) return;
+  try { await api('DELETE', `/seasons/${seasonId}/gallery/${imgId}`); toast('Deleted!'); } catch (e) { toast(e.message, 'error'); }
+  // Refresh gallery modal
+  const seasons = await api('GET', '/seasons');
+  const s = seasons && seasons.find(x => x.id === seasonId);
+  if (s) window.manageSeasonGallery(seasonId, s.title);
 };
 
 // ── Init ─────────────────────────────────────────────────────

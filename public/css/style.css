@@ -1714,12 +1714,315 @@ h3 {
 }
 
 @media (max-width: 480px) {
-  .hero-stats {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .machine-specs {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   ABOUT US CAROUSEL
+   ============================================================ */
+.about-carousel-wrap {
+  position: relative;
+  max-width: 860px;
+  margin: 0 auto 1.5rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.about-slide-frame {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.about-slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-slide-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gray-500);
+}
+
+.about-placeholder-icon {
+  font-size: 3rem;
+}
+
+.about-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(240, 151, 42, 0.15);
+  border: 1px solid rgba(240, 151, 42, 0.3);
+  color: var(--electric);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.about-arrow:hover {
+  background: rgba(240, 151, 42, 0.3);
+}
+
+.about-arrow-prev {
+  left: 12px;
+}
+
+.about-arrow-next {
+  right: 12px;
+}
+
+.about-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.about-caption-area {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.about-caption {
+  color: var(--gray-300);
+  font-size: 1rem;
+  min-height: 1.5em;
+  margin-bottom: 0.75rem;
+}
+
+.about-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.about-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gray-700);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.about-dot.active {
+  background: var(--electric);
+  transform: scale(1.3);
+}
+
+/* ============================================================
+   MORE INFORMATION BUTTON (Season Cards)
+   ============================================================ */
+.btn-more-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--electric);
+  background: rgba(240, 151, 42, 0.08);
+  border: 1px solid rgba(240, 151, 42, 0.3);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+
+.btn-more-info:hover {
+  background: rgba(240, 151, 42, 0.18);
+  border-color: rgba(240, 151, 42, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-more-info:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================
+   SEASON GALLERY MODAL
+   ============================================================ */
+.sg-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(5, 5, 7, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.25s ease;
+}
+
+.sg-modal-box {
+  position: relative;
+  background: var(--dark-3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 780px;
+  width: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  animation: slideUp 0.3s ease;
+}
+
+.sg-modal-title {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  color: var(--electric);
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.sg-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--gray-300);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.sg-modal-close:hover {
+  color: var(--white);
+  border-color: var(--electric);
+}
+
+.sg-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+}
+
+.sg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sg-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--gray-500);
+}
+
+.sg-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sg-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+  line-height: 1;
+}
+
+.sg-arrow:hover {
+  background: rgba(240, 151, 42, 0.4);
+}
+
+.sg-arrow-prev {
+  left: 10px;
+}
+
+.sg-arrow-next {
+  right: 10px;
+}
+
+.sg-caption {
+  text-align: center;
+  color: var(--gray-300);
+  font-size: 0.95rem;
+  margin-top: 0.9rem;
+  min-height: 1.4em;
+}
+
+.sg-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 0.6rem;
+}
+
+.sg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gray-700);
+  transition: background var(--transition), transform var(--transition);
+}
+
+.sg-dot.active {
+  background: var(--electric);
+  transform: scale(1.35);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

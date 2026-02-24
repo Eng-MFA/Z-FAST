@@ -70,11 +70,13 @@ app.use('/api/team-info', require('./routes/teamInfo'));
 app.use('/api/team-members', require('./routes/teamMembers'));
 app.use('/api/sponsors', require('./routes/sponsors'));
 app.use('/api/seasons', require('./routes/seasons'));
+app.use('/api/seasons', require('./routes/seasonGallery'));
 app.use('/api/news', require('./routes/news'));
 app.use('/api/car-specs', require('./routes/carSpecs'));
 app.use('/api/cars', require('./routes/cars'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/about', require('./routes/about'));
 
 // ── SPA Fallback ──────────────────────────────────────────────
 app.get('*', (req, res) => {
