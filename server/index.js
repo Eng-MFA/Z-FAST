@@ -69,8 +69,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/team-info', require('./routes/teamInfo'));
 app.use('/api/team-members', require('./routes/teamMembers'));
 app.use('/api/sponsors', require('./routes/sponsors'));
-app.use('/api/seasons', require('./routes/seasons'));
-app.use('/api/seasons', require('./routes/seasonGallery'));
+app.use('/api/seasons', require('./routes/seasons'));   // gallery routes included inside
 app.use('/api/news', require('./routes/news'));
 app.use('/api/car-specs', require('./routes/carSpecs'));
 app.use('/api/cars', require('./routes/cars'));

@@ -366,20 +366,55 @@ const sgNext = document.getElementById('sg-next');
 
 let sgImages = [], sgCurrent = 0;
 
-function openSeasonGallery(seasonTitle, images) {
+function openSeasonGallery(seasonTitle, images, meta = {}) {
     sgImages = images;
     sgCurrent = 0;
     sgTitle.textContent = seasonTitle;
-    sgModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    renderSgSlide(0);
+
+    // Build info block (description + achievements)
+    let infoHTML = '';
+    if (meta.desc || meta.ach) {
+        infoHTML = `<div class="sg-info-block">`;
+        if (meta.desc) infoHTML += `<p class="sg-info-desc">${meta.desc}</p>`;
+        if (meta.ach) infoHTML += `<div class="sg-info-ach">🏆 ${meta.ach}</div>`;
+        infoHTML += `</div>`;
+    }
+
+    // Find or create info block inside modal box
+    const box = sgModal.querySelector('.sg-modal-box');
+    let infoEl = box.querySelector('.sg-info-block');
+    if (infoEl) infoEl.remove();
+    if (infoHTML) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = infoHTML;
+        box.insertBefore(tmp.firstChild, box.querySelector('.sg-img-wrap'));
+    }
+
+    if (images.length > 0) {
+        sgModal.querySelector('.sg-img-wrap').style.display = '';
+        sgCaption.style.display = '';
+        sgDots.style.display = '';
+        renderSgSlide(0);
+    } else {
+        sgModal.querySelector('.sg-img-wrap').style.display = 'none';
+        sgCaption.style.display = 'none';
+        sgDots.style.display = 'none';
+        sgCaption.textContent = '';
+        sgDots.innerHTML = '';
+    }
+
     sgPrev.style.display = images.length <= 1 ? 'none' : '';
     sgNext.style.display = images.length <= 1 ? 'none' : '';
+    sgModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
 function closeSeasonGallery() {
     sgModal.style.display = 'none';
     document.body.style.overflow = '';
+    // Clean info block for next use
+    const infoEl = sgModal.querySelector('.sg-info-block');
+    if (infoEl) infoEl.remove();
 }
 
 function renderSgSlide(idx) {
@@ -400,6 +435,7 @@ sgPrev?.addEventListener('click', () => renderSgSlide(sgCurrent - 1));
 sgNext?.addEventListener('click', () => renderSgSlide(sgCurrent + 1));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSeasonGallery(); });
 
+
 // ── Load Achievements (Seasons) ───────────────────────────
 async function loadSeasons() {
     const seasons = await apiFetch('/api/seasons');
@@ -418,8 +454,13 @@ async function loadSeasons() {
         <h3>${s.title}</h3>
         <p>${s.description || ''}</p>
         ${s.achievements ? `<div class="season-achievements">${s.achievements}</div>` : ''}
-        <button class="btn-more-info" data-season-id="${s.id}" data-season-title="${s.title} – ${s.year}">
-          More Information ›
+        <button class="btn-more-info"
+          data-id="${s.id}"
+          data-title="${s.title}"
+          data-year="${s.year}"
+          data-desc="${(s.description || '').replace(/"/g, '&quot;')}"
+          data-ach="${(s.achievements || '').replace(/"/g, '&quot;')}">
+          🔍 More Information
         </button>
       </div>`;
         grid.appendChild(card);
@@ -428,16 +469,17 @@ async function loadSeasons() {
     // Wire up "More Information" buttons
     grid.querySelectorAll('.btn-more-info').forEach(btn => {
         btn.addEventListener('click', async () => {
-            const id = btn.dataset.seasonId;
-            const title = btn.dataset.seasonTitle;
-            btn.disabled = true; btn.textContent = 'Loading…';
+            const id = btn.dataset.id;
+            const title = btn.dataset.title;
+            const year = btn.dataset.year;
+            const desc = btn.dataset.desc;
+            const ach = btn.dataset.ach;
+            btn.disabled = true;
+            btn.innerHTML = '<span style="opacity:.7">Loading…</span>';
             const images = await apiFetch(`/api/seasons/${id}/gallery`);
-            btn.disabled = false; btn.textContent = 'More Information ›';
-            if (!images || images.length === 0) {
-                alert('No additional images available for this achievement yet.');
-                return;
-            }
-            openSeasonGallery(title, images);
+            btn.disabled = false;
+            btn.innerHTML = '🔍 More Information';
+            openSeasonGallery(`${title} — Season ${year}`, images || [], { desc, ach });
         });
     });
 }
