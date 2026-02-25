@@ -1,11 +1,10 @@
 {
     "version": 2,
-    "framework": null,
     "outputDirectory": "public",
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://web-production-c67b3.up.railway.app/api/:path*"
+            "destination": "https://z-fast-production.up.railway.app/api/:path*"
         },
         {
             "source": "/((?!.*\\.[a-zA-Z0-9]+$).*)",
@@ -14,11 +13,11 @@
     ],
     "headers": [
         {
-            "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|json))",
+            "source": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|json)",
             "headers": [
                 {
                     "key": "Cache-Control",
-                    "value": "public, max-age=86400, immutable"
+                    "value": "public, max-age=31536000, immutable"
                 }
             ]
         }
