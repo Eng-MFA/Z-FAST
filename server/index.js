@@ -29,6 +29,7 @@ function isAllowedOrigin(origin) {
     if (!origin) return true;                                        // same-origin / server-to-server
     if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;  // local dev
     if (/\.vercel\.app$/.test(origin)) return true;                 // any Vercel preview/prod URL
+    if (origin === 'https://z-fast-racing-team.vercel.app') return true; // Explicit prod URL
     if (/\.railway\.app$/.test(origin)) return true;                // Railway itself
     if (extraOrigins.includes(origin)) return true;                  // custom ALLOWED_ORIGIN
     return false;
