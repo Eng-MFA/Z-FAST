@@ -286,11 +286,22 @@ h3 {
   position: relative;
 }
 
-/* Center the nav-links block between logo and CTA */
-.nav-container .nav-links {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+/* Default layout: Space items out normally */
+.nav-links {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all var(--transition);
+}
+
+/* On desktop, absolute center ONLY if there is enough space */
+@media (min-width: 1100px) {
+  .nav-links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .nav-logo {
@@ -302,25 +313,17 @@ h3 {
   flex-shrink: 0;
 }
 
-.nav-logo img {
-  height: 48px;
+.nav-logo-img {
+  height: 40px;
   width: auto;
-  object-fit: contain;
 }
 
 .logo-text {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
+  font-weight: 900;
   color: var(--electric);
   letter-spacing: 0.05em;
   text-shadow: 0 0 20px var(--electric-glow);
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-  align-items: center;
-  gap: 1.4rem;
-  flex-wrap: nowrap;
 }
 
 .nav-links a {
@@ -391,20 +394,29 @@ h3 {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+  .nav-container {
+    padding: 0 1.5rem;
+  }
+
   .nav-links {
     position: fixed;
     inset: 0;
-    top: var(--nav-h);
+    top: 0;
+    height: 100vh;
+    width: 100%;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(5, 5, 7, 0.97);
-    backdrop-filter: blur(20px);
-    gap: 2.5rem;
+    background: rgba(5, 5, 7, 0.98);
+    backdrop-filter: blur(25px);
+    gap: 2rem;
     transform: translateX(100%);
-    transition: transform var(--transition);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 999;
+    /* Reset desktop positioning */
+    left: 0;
+    transform-origin: right;
   }
 
   .nav-links.open {
@@ -412,15 +424,23 @@ h3 {
   }
 
   .nav-links a {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
   }
 
   .hamburger {
     display: flex;
+    z-index: 1001;
+    /* Ensure above the overlay */
   }
 
   .nav-cta {
     display: none;
+  }
+
+  /* Reduce logo size on mobile to prevent overlap with hamburger */
+  .logo-text {
+    font-size: 1.1rem;
   }
 }
 
