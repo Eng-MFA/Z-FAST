@@ -4,7 +4,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "https://z-fast-production.up.railway.app/api/:path*"
+            "destination": "https://web-production-c67b3.up.railway.app/api/:path*"
         },
         {
             "source": "/((?!.*\\.[a-zA-Z0-9]+$).*)",
