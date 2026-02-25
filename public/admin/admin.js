@@ -4,6 +4,13 @@
 
 const API = (typeof window !== 'undefined' && window.ZFAST_API) ? window.ZFAST_API : '';
 let token = localStorage.getItem('zfast_token') || '';
+const fixImg = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/uploads')) return '/api' + url;
+  if (url.startsWith('uploads')) return '/api/' + url;
+  return url;
+};
 
 // ── Utilities ───────────────────────────────────────────────
 const $ = (s, c = document) => c.querySelector(s);
@@ -60,7 +67,7 @@ function imageFieldHTML(currentUrl, fieldId = 'modal-image') {
     <div class="form-group">
       <label>Image</label>
       <div class="upload-area" id="upload-area-${fieldId}" onclick="document.getElementById('file-${fieldId}').click()">
-        ${currentUrl ? `<img src="${API}${currentUrl}" class="upload-preview" id="preview-${fieldId}" />` : `<img class="upload-preview" id="preview-${fieldId}" style="display:none" />`}
+        ${currentUrl ? `<img src="${API}${fixImg(currentUrl)}" class="upload-preview" id="preview-${fieldId}" />` : `<img class="upload-preview" id="preview-${fieldId}" style="display:none" />`}
         <div class="upload-label">${currentUrl ? '📷 Click to change image' : '📷 Click to upload image'}</div>
       </div>
       <input type="file" id="file-${fieldId}" accept="image/*" style="display:none" />
@@ -78,7 +85,7 @@ function bindUpload(fieldId) {
       const url = await uploadImage(file);
       document.getElementById(fieldId).value = url;
       const preview = document.getElementById('preview-' + fieldId);
-      preview.src = API + url; preview.style.display = 'block';
+      preview.src = API + fixImg(url); preview.style.display = 'block';
       toast('Image uploaded!');
     } catch { toast('Upload failed', 'error'); }
   });
@@ -206,7 +213,7 @@ async function loadCars() {
     const specs = Array.isArray(c.specs) ? c.specs : JSON.parse(c.specs || '[]');
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${c.image ? `<img src="${API}${c.image}" style="border-radius:6px" />` : '—'}</td>
+      <td>${c.image ? `<img src="${API}${fixImg(c.image)}" style="border-radius:6px" />` : '—'}</td>
       <td><strong>${c.name}</strong></td>
       <td>${c.year || '—'}</td>
       <td style="font-size:0.8rem;color:var(--gray-300)">${specs.length} specs</td>
@@ -277,7 +284,7 @@ async function loadTeamMembers() {
     const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${m.image ? `<img src="${API}${m.image}" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
+      <td>${m.image ? `<img src="${API}${fixImg(m.image)}" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
       <td><strong>${m.name}</strong></td><td>${m.role}</td><td>${m.department}</td>
       <td><div class="action-btns">
         <button class="btn-edit" onclick="editMember(${m.id})">Edit</button>
@@ -338,7 +345,7 @@ async function loadSponsors() {
   sponsors.forEach(s => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${s.logo ? `<img src="${API}${s.logo}" />` : '—'}</td>
+      <td>${s.logo ? `<img src="${API}${fixImg(s.logo)}" />` : '—'}</td>
       <td><strong>${s.name}</strong></td>
       <td><span class="sponsor-tier ${s.tier}">${s.tier.toUpperCase()}</span></td>
       <td><a href="${s.website}" target="_blank" style="color:var(--electric);font-size:0.8rem">${s.website !== '#' ? s.website : '—'}</a></td>
@@ -387,7 +394,7 @@ async function loadSeasons() {
   seasons.forEach(s => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${s.image ? `<img src="${API}${s.image}" style="border-radius:6px" />` : '—'}</td>
+      <td>${s.image ? `<img src="${API}${fixImg(s.image)}" style="border-radius:6px" />` : '—'}</td>
       <td><strong>${s.year}</strong></td><td>${s.title}</td>
       <td style="max-width:200px;font-size:0.8rem;color:var(--gray-300)">${s.achievements || '—'}</td>
       <td><div class="action-btns">
@@ -433,6 +440,7 @@ async function loadNews() {
     const date = new Date(n.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     const tr = document.createElement('tr');
     tr.innerHTML = `
+      <td>${n.image ? `<img src="${API}${fixImg(n.image)}" style="border-radius:6px;width:60px;height:40px;object-fit:cover" />` : '—'}</td>
       <td style="max-width:300px"><strong>${n.title}</strong></td>
       <td><span class="news-category-badge ${n.category}">${n.category}</span></td>
       <td style="font-size:0.8rem;color:var(--gray-300)">${date}</td>
@@ -554,7 +562,7 @@ async function loadAboutSlides() {
     card.style.cssText = 'background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;overflow:hidden';
     card.innerHTML = `
       ${s.image
-        ? `<img src="${API}${s.image}" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.style.display='none'" />`
+        ? `<img src="${API}${fixImg(s.image)}" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.style.display='none'" />`
         : `<div style="width:100%;height:140px;background:var(--dark-2);display:flex;align-items:center;justify-content:center;font-size:2rem">🖼️</div>`
       }
       <div style="padding:.75rem">
@@ -615,7 +623,7 @@ window.manageSeasonGallery = async (seasonId, seasonTitle) => {
     ? images.map(img => `
       <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--card-border)">
         ${img.image
-        ? `<img src="${API}${img.image}" style="width:90px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" />`
+        ? `<img src="${API}${fixImg(img.image)}" style="width:90px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" />`
         : `<div style="width:90px;height:60px;background:var(--dark-2);border-radius:6px;display:flex;align-items:center;justify-content:center">🖼️</div>`}
         <span style="flex:1;font-size:.85rem;color:var(--gray-300)">${img.caption || '<em style="color:var(--gray-500)">No caption</em>'}</span>
         <button onclick="deleteSeasonGalleryImg(${seasonId},${img.id},'${seasonTitle.replace(/'/g, "\\'")}')" style="padding:.3rem .7rem;border-radius:6px;background:rgba(255,62,62,.15);border:1px solid rgba(255,62,62,.3);color:#ff4555;cursor:pointer;flex-shrink:0">✕</button>

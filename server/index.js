@@ -58,6 +58,7 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
     etag: true,
 }));
 app.use('/uploads', express.static(uploadsDir));
+app.use('/api/uploads', express.static(uploadsDir));
 
 // ── Initialize DB ─────────────────────────────────────────────
 const db = require('./db');

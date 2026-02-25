@@ -3,6 +3,13 @@
    ============================================================ */
 
 const API = (typeof window !== 'undefined' && window.ZFAST_API) ? window.ZFAST_API : '';
+const fixImg = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    if (url.startsWith('/uploads')) return '/api' + url;
+    if (url.startsWith('uploads')) return '/api/' + url;
+    return url;
+};
 
 // ── Utility ────────────────────────────────────────────────
 const $ = (s, ctx = document) => ctx.querySelector(s);
@@ -149,7 +156,7 @@ async function loadAbout() {
         frame.style.opacity = '0';
         setTimeout(() => {
             const s = slides[idx];
-            frame.innerHTML = `<img src="${s.image}" alt="${s.caption || 'About Z-FAST'}" class="about-slide-img" />`;
+            frame.innerHTML = `<img src="${API}${fixImg(s.image)}" alt="${s.caption || 'About Z-FAST'}" class="about-slide-img" />`;
             if (captionEl) captionEl.textContent = s.caption || '';
             // dots
             if (dotsEl) {
@@ -225,7 +232,7 @@ async function loadCars() {
         }
         setTimeout(() => {
             if (car.image) {
-                frame.innerHTML = `<img src="${car.image}" alt="${car.name}" style="width:100%;height:100%;object-fit:cover" />`;
+                frame.innerHTML = `<img src="${API}${fixImg(car.image)}" alt="${car.name}" style="width:100%;height:100%;object-fit:cover" />`;
             } else {
                 frame.innerHTML = `<div class="car-placeholder"><div class="car-glow-ring"></div><div class="car-placeholder-text">${car.name}</div></div>`;
             }
@@ -311,7 +318,7 @@ async function loadTeam() {
                     </a>` : '';
                 card.innerHTML = `
           <div class="member-img-wrap">
-            ${m.image ? `<img src="${m.image}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder">${initials}</div>`}
+            ${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder">${initials}</div>`}
             <div class="member-hover-overlay"><p>${m.bio || 'Team member'}</p></div>
             ${linkedinBadge}
           </div>
@@ -345,7 +352,7 @@ async function loadSponsors() {
     carousel.innerHTML = '';
     sponsors.forEach(sp => {
         const item = el('div', 'sponsor-item');
-        item.innerHTML = sp.logo ? `<img src="${sp.logo}" alt="${sp.name}" />` : `<div class="sponsor-name">${sp.name}</div>`;
+        item.innerHTML = sp.logo ? `<img src="${API}${fixImg(sp.logo)}" alt="${sp.name}" />` : `<div class="sponsor-name">${sp.name}</div>`;
         if (sp.logo) item.innerHTML += `<div class="sponsor-name">${sp.name}</div>`;
         item.innerHTML += `<div class="sponsor-tier ${sp.tier}">${sp.tier.toUpperCase()}</div>`;
         if (sp.website && sp.website !== '#') {
@@ -421,7 +428,7 @@ function renderSgSlide(idx) {
     sgCurrent = (idx + sgImages.length) % sgImages.length;
     const img = sgImages[sgCurrent];
     sgFrame.innerHTML = img.image
-        ? `<img src="${img.image}" alt="${img.caption || ''}" class="sg-img" />`
+        ? `<img src="${API}${fixImg(img.image)}" alt="${img.caption || ''}" class="sg-img" />`
         : `<div class="sg-placeholder">📷</div>`;
     sgCaption.textContent = img.caption || '';
     sgDots.innerHTML = sgImages.map((_, i) =>
@@ -447,7 +454,7 @@ async function loadSeasons() {
         const card = el('div', 'season-card');
         card.innerHTML = `
       <div class="season-img">
-        ${s.image ? `<img src="${s.image}" alt="${s.title}" loading="lazy" />` : `<div class="season-img-placeholder">Season ${s.year}</div>`}
+        ${s.image ? `<img src="${API}${fixImg(s.image)}" alt="${s.title}" loading="lazy" />` : `<div class="season-img-placeholder">Season ${s.year}</div>`}
       </div>
       <div class="season-body">
         <div class="season-year">Season ${s.year}</div>
@@ -497,7 +504,7 @@ async function loadNews() {
         const card = el('div', 'news-card');
         card.innerHTML = `
       <div class="news-img">
-        ${n.image ? `<img src="${n.image}" alt="${n.title}" loading="lazy" />` : `<div class="news-img-placeholder">${catEmoji[n.category] || '📰'}</div>`}
+        ${n.image ? `<img src="${API}${fixImg(n.image)}" alt="${n.title}" loading="lazy" />` : `<div class="news-img-placeholder">${catEmoji[n.category] || '📰'}</div>`}
       </div>
       <div class="news-body">
         <span class="news-category-badge ${n.category}">${n.category}</span>

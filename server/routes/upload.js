@@ -31,7 +31,7 @@ const upload = multer({
 // POST /api/upload — upload single image (admin only)
 router.post('/', requireAuth, upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    res.json({ url: `/uploads/${req.file.filename}` });
+    res.json({ url: `/api/uploads/${req.file.filename}` });
 });
 
 module.exports = router;
