@@ -5,7 +5,7 @@ const { requireAuth } = require('./auth');
 
 // ── Seasons CRUD ──────────────────────────────────────────────
 router.get('/', async (req, res) => {
-    try { res.json(await db.prepare('SELECT * FROM seasons ORDER BY display_order DESC').all()); }
+    try { res.json(await db.prepare('SELECT * FROM seasons ORDER BY display_order ASC').all()); }
     catch (e) { res.status(500).json({ error: e.message }); }
 });
 

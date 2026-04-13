@@ -5,13 +5,26 @@ const path = require('path');
 const fs = require('fs');
 
 // ── Path ──────────────────────────────────────────────────────
-// Railway: set DATA_DIR env var to match your Volume mount path (/app/data)
-// Local:   falls back to <project>/data/
 const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const _db = new sqlite3.Database(path.join(dataDir, 'zfast.db'));
+// ── Restore-Swap ──────────────────────────────────────────────
+// If a backup restore wrote zfast.db.restore, apply it now before opening.
+const dbPath      = path.join(dataDir, 'zfast.db');
+const restorePath = path.join(dataDir, 'zfast.db.restore');
+if (fs.existsSync(restorePath)) {
+    try {
+        [dbPath + '-wal', dbPath + '-shm'].forEach(f => { try { fs.unlinkSync(f); } catch (_) {} });
+        fs.renameSync(restorePath, dbPath);
+        console.log('✅ Restore applied: database replaced from backup.');
+    } catch (e) {
+        console.error('❌ Restore swap failed:', e.message);
+    }
+}
+
+const _db = new sqlite3.Database(dbPath);
 _db.configure('busyTimeout', 10000);
+
 
 // ── Promise Helpers ───────────────────────────────────────────
 // These expose the same interface as the old node:sqlite API so
@@ -74,6 +87,22 @@ _db.serialize(() => {
     logo TEXT,
     website TEXT,
     tier TEXT DEFAULT 'silver',
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS partners (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    logo TEXT,
+    website TEXT,
+    tier TEXT DEFAULT 'silver',
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS media_coverage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    image TEXT NOT NULL,
+    caption TEXT,
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -264,7 +293,12 @@ _db.serialize(() => {
   _db.run('SELECT 1', () => console.log('✅ Database ready (sqlite3)'));
 });
 
+// ── Checkpoint helper (for backup) ───────────────────────────
+// Merges WAL into the main db file so a file-copy backup is complete.
+const checkpoint = () => new Promise((res, rej) =>
+  _db.run('PRAGMA wal_checkpoint(TRUNCATE)', (err) => err ? rej(err) : res()));
+
 // ── Export ────────────────────────────────────────────────────
 // Routes use: await db.prepare('SQL').get(...), .all(...), .run(...)
 //             await db.exec('SQL')        ← for transactions/DDL
-module.exports = { prepare, exec: dbExec, run: dbRun, get: dbGet, all: dbAll };
+module.exports = { prepare, exec: dbExec, run: dbRun, get: dbGet, all: dbAll, checkpoint };

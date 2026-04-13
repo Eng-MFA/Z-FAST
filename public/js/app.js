@@ -302,14 +302,12 @@ async function loadTeam() {
     if (!members) return;
     const grid = document.getElementById('team-grid');
     if (!grid) return;
-    let activeDept = 'all';
-    function renderMembers(dept) {
-        activeDept = dept;
-        const filtered = dept === 'all' ? members : members.filter(m => m.department === dept);
+    
+    function renderMembers() {
         grid.style.opacity = '0';
         setTimeout(() => {
             grid.innerHTML = '';
-            filtered.forEach(m => {
+            members.forEach(m => {
                 const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
                 const card = el('div', 'member-card');
                 const linkedinBadge = m.linkedin && m.linkedin !== '#'
@@ -325,7 +323,6 @@ async function loadTeam() {
           <div class="member-info">
             <div class="member-name">${m.name}</div>
             <div class="member-role">${m.role}</div>
-            <span class="member-dept-badge">${m.department}</span>
           </div>`;
                 grid.appendChild(card);
             });
@@ -333,14 +330,7 @@ async function loadTeam() {
         }, 200);
     }
     grid.style.transition = 'opacity 0.2s ease';
-    renderMembers('all');
-    $$('.dept-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            $$('.dept-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            renderMembers(tab.dataset.dept);
-        });
-    });
+    renderMembers();
 }
 
 // ── Load Sponsors ───────────────────────────────────────────
@@ -360,6 +350,82 @@ async function loadSponsors() {
             a.appendChild(item); carousel.appendChild(a);
         } else carousel.appendChild(item);
     });
+}
+
+// ── Load Partners ───────────────────────────────────────────
+async function loadPartners() {
+    const partners = await apiFetch('/api/partners');
+    if (!partners) return;
+    const carousel = document.getElementById('partners-carousel');
+    if (!carousel) return;
+    carousel.innerHTML = '';
+    partners.forEach(sp => {
+        const item = el('div', 'sponsor-item');
+        item.innerHTML = sp.logo ? `<img src="${API}${fixImg(sp.logo)}" alt="${sp.name}" />` : `<div class="sponsor-name">${sp.name}</div>`;
+        if (sp.logo) item.innerHTML += `<div class="sponsor-name">${sp.name}</div>`;
+        if (sp.website && sp.website !== '#') {
+            const a = el('a'); a.href = sp.website; a.target = '_blank'; a.rel = 'noopener';
+            a.appendChild(item); carousel.appendChild(a);
+        } else carousel.appendChild(item);
+    });
+}
+
+// ── Load Media Coverage ─────────────────────────────────────
+async function loadMediaCoverage() {
+    let media = await apiFetch('/api/media-coverage');
+    if (!media || media.length === 0) {
+        media = [{ image: '', caption: 'WAITING FOR SIGNAL...' }];
+    }
+    const tvContent = document.getElementById('tv-content');
+    const captionEl = document.getElementById('media-caption');
+    const dotsEl = document.getElementById('media-dots');
+    if (!tvContent || !captionEl || !dotsEl) return;
+    
+    let sc = document.getElementById('media-coverage');
+    if(sc) sc.style.display = 'block';
+
+    tvContent.innerHTML = '';
+    dotsEl.innerHTML = '';
+    let curr = 0;
+    
+    media.forEach((m, i) => {
+        const slide = el('div', 'tv-slide');
+        if (i === 0) slide.classList.add('active');
+        if (m.image) {
+            slide.innerHTML = `<img src="${API}${fixImg(m.image)}" alt="Media Coverage" loading="lazy" />`;
+        } else {
+            slide.innerHTML = `<div class="tv-slide-placeholder">NO SIGNAL</div>`;
+        }
+        tvContent.appendChild(slide);
+        
+        const dot = el('button', 'media-dot');
+        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+        if (i === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => setMediaSlide(i));
+        dotsEl.appendChild(dot);
+    });
+    
+    captionEl.textContent = media[0].caption || '';
+    
+    function setMediaSlide(idx) {
+        const slides = tvContent.querySelectorAll('.tv-slide');
+        const dots = dotsEl.querySelectorAll('.media-dot');
+        slides[curr].classList.remove('active');
+        dots[curr].classList.remove('active');
+        curr = (idx + media.length) % media.length;
+        slides[curr].classList.add('active');
+        dots[curr].classList.add('active');
+        captionEl.textContent = media[curr].caption || '';
+    }
+    
+    const prevBtn = document.getElementById('media-prev');
+    const nextBtn = document.getElementById('media-next');
+    if (prevBtn) prevBtn.addEventListener('click', () => setMediaSlide(curr - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => setMediaSlide(curr + 1));
+    
+    setInterval(() => {
+        setMediaSlide(curr + 1);
+    }, 6000);
 }
 
 // ── Season Gallery Modal ─────────────────────────────────
@@ -551,8 +617,516 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
         loadCars(),
         loadTeam(),
         loadSponsors(),
+        loadPartners(),
+        loadMediaCoverage(),
         loadSeasons(),
         loadNews(),
     ]);
     observeReveals();
+    const currentYearEl = document.getElementById('current-year');
+    if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
+
+    // Start section background animations
+    initAboutCanvas();
+    initMachineCanvas();
+    initMediaCanvas();
+    initSponsorCanvas();
+    initContactCanvas();
 })();
+
+/* ============================================================
+   ANIMATED SECTION BACKGROUNDS
+   ============================================================ */
+
+// ── ABOUT US: Circuit Board Neural Network ───────────────────
+function initAboutCanvas() {
+    const canvas = document.getElementById('about-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    const nodes = [];
+    const NODE_COUNT = 30;
+    const CONNECTION_DIST = 160;
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+        nodes.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.35,
+            vy: (Math.random() - 0.5) * 0.35,
+            r: Math.random() * 2.5 + 1.5
+        });
+    }
+
+    // Signal pulse animation along a connection
+    const pulses = [];
+    setInterval(() => {
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const dx = nodes[i].x - nodes[j].x;
+                const dy = nodes[i].y - nodes[j].y;
+                if (Math.sqrt(dx * dx + dy * dy) < CONNECTION_DIST && Math.random() < 0.02) {
+                    pulses.push({ from: i, to: j, t: 0 });
+                    break;
+                }
+            }
+        }
+    }, 300);
+
+    function draw() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Move
+        nodes.forEach(n => {
+            n.x += n.vx; n.y += n.vy;
+            if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+            if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+        });
+
+        // Connections
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const dx = nodes[i].x - nodes[j].x;
+                const dy = nodes[i].y - nodes[j].y;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < CONNECTION_DIST) {
+                    const alpha = (1 - d / CONNECTION_DIST) * 0.25;
+                    ctx.strokeStyle = `rgba(29, 120, 200, ${alpha})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // Pulses
+        for (let k = pulses.length - 1; k >= 0; k--) {
+            const p = pulses[k];
+            p.t += 0.025;
+            if (p.t > 1) { pulses.splice(k, 1); continue; }
+            const ni = nodes[p.from]; const nj = nodes[p.to];
+            const px = ni.x + (nj.x - ni.x) * p.t;
+            const py = ni.y + (nj.y - ni.y) * p.t;
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(100, 180, 255, ${1 - p.t})`;
+            ctx.fill();
+        }
+
+        // Nodes
+        nodes.forEach(n => {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(29, 120, 200, 0.5)';
+            ctx.fill();
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── THE MACHINE: Electric sparks & speed lines ───────────────
+function initMachineCanvas() {
+    const canvas = document.getElementById('machine-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    const sparks = [];
+    const streaks = [];
+
+    // Speed lines (horizontal streaks)
+    for (let i = 0; i < 18; i++) {
+        streaks.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            len: Math.random() * 140 + 60,
+            speed: Math.random() * 4 + 2,
+            alpha: Math.random() * 0.18 + 0.04,
+            thickness: Math.random() < 0.3 ? 1.5 : 0.6
+        });
+    }
+
+    function spawnSpark() {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const branches = [];
+        const numBranch = Math.floor(Math.random() * 3) + 2;
+        for (let b = 0; b < numBranch; b++) {
+            const angle = (Math.random() * Math.PI * 2);
+            const len = Math.random() * 55 + 20;
+            branches.push({ angle, len, sub: Math.random() < 0.4 });
+        }
+        sparks.push({ x, y, branches, life: 1, decay: Math.random() * 0.04 + 0.025 });
+    }
+
+    setInterval(spawnSpark, 450);
+
+    function draw() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Speed streaks
+        streaks.forEach(s => {
+            s.x -= s.speed;
+            if (s.x + s.len < 0) s.x = canvas.width + s.len;
+            const grd = ctx.createLinearGradient(s.x - s.len, s.y, s.x, s.y);
+            grd.addColorStop(0, `rgba(240,151,42,0)`);
+            grd.addColorStop(1, `rgba(240,151,42,${s.alpha})`);
+            ctx.strokeStyle = grd;
+            ctx.lineWidth = s.thickness;
+            ctx.beginPath();
+            ctx.moveTo(s.x - s.len, s.y);
+            ctx.lineTo(s.x, s.y);
+            ctx.stroke();
+        });
+
+        // Lightning sparks
+        for (let k = sparks.length - 1; k >= 0; k--) {
+            const sp = sparks[k];
+            sp.life -= sp.decay;
+            if (sp.life <= 0) { sparks.splice(k, 1); continue; }
+
+            sp.branches.forEach(b => {
+                const ex = sp.x + Math.cos(b.angle) * b.len;
+                const ey = sp.y + Math.sin(b.angle) * b.len;
+                // Jitter mid-point to look like lightning
+                const mx = (sp.x + ex) / 2 + (Math.random() - 0.5) * 20;
+                const my = (sp.y + ey) / 2 + (Math.random() - 0.5) * 20;
+
+                ctx.strokeStyle = `rgba(240,200,80,${sp.life * 0.9})`;
+                ctx.lineWidth = sp.life * 1.5;
+                ctx.shadowColor = '#f0972a';
+                ctx.shadowBlur = sp.life * 10;
+                ctx.beginPath();
+                ctx.moveTo(sp.x, sp.y);
+                ctx.quadraticCurveTo(mx, my, ex, ey);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                if (b.sub) {
+                    const sx = mx + (Math.random() - 0.5) * 30;
+                    const sy = my + (Math.random() - 0.5) * 30;
+                    ctx.strokeStyle = `rgba(240,200,80,${sp.life * 0.4})`;
+                    ctx.lineWidth = sp.life * 0.6;
+                    ctx.beginPath();
+                    ctx.moveTo(mx, my);
+                    ctx.lineTo(sx, sy);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── MEDIA COVERAGE: Broadcast waves & scanlines ──────────────
+function initMediaCanvas() {
+    const canvas = document.getElementById('media-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    let waveTime = 0;
+
+    function draw() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        waveTime += 0.018;
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // Concentric broadcast rings
+        for (let i = 1; i <= 6; i++) {
+            const r = (i * 90) + (waveTime * 30 % 90);
+            const alpha = Math.max(0, 0.12 - (r / (canvas.width * 0.75)) * 0.12);
+            ctx.strokeStyle = `rgba(111, 163, 240, ${alpha})`;
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(cx, cy * 0.5, r, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Horizontal scan lines
+        for (let y = 0; y < canvas.height; y += 5) {
+            const brightness = 0.5 + 0.5 * Math.sin(y * 0.05 + waveTime * 2);
+            ctx.fillStyle = `rgba(255,255,255,${brightness * 0.02})`;
+            ctx.fillRect(0, y, canvas.width, 1);
+        }
+
+        // Signal dots sweeping left-right
+        for (let d = 0; d < 6; d++) {
+            const t = (waveTime * 0.4 + d / 6) % 1;
+            const x = t * canvas.width;
+            const y = canvas.height * 0.15 + d * (canvas.height * 0.14);
+            const size = 1.5 + Math.sin(waveTime * 3 + d) * 0.8;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(111,163,240,0.35)`;
+            ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── SPONSORSHIP & PARTNERSHIP: Floating handshake / coin orbit ──
+function initSponsorCanvas() {
+    const canvas = document.getElementById('sponsor-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // Stars / floating logos orbiting a central axis
+    const RINGS = 3;
+    const orbits = [];
+    for (let r = 0; r < RINGS; r++) {
+        const count = 5 + r * 4;
+        const radius = 100 + r * 120;
+        const speed  = (0.0004 + r * 0.0002) * (r % 2 === 0 ? 1 : -1);
+        for (let i = 0; i < count; i++) {
+            orbits.push({
+                angle:  (i / count) * Math.PI * 2,
+                radius,
+                speed,
+                size:   3 - r * 0.5,
+                alpha:  0.35 - r * 0.08,
+                ring:   r,
+                color:  r === 0 ? '240,151,42' : r === 1 ? '180,120,30' : '100,70,20',
+            });
+        }
+    }
+
+    // Streaking "deal lines" — thin diagonal lines linking two points
+    const dealLines = Array.from({ length: 10 }, () => ({
+        x1: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+        y1: Math.random() * 600,
+        x2: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+        y2: Math.random() * 600,
+        alpha: Math.random() * 0.08 + 0.03,
+        pulse: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.015 + 0.006,
+    }));
+
+    let t = 0;
+
+    function draw() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        t += 1;
+
+        const cx = canvas.width  / 2;
+        const cy = canvas.height / 2;
+
+        // Draw faint orbit rings
+        for (let r = 0; r < RINGS; r++) {
+            const radius = 100 + r * 120;
+            ctx.strokeStyle = `rgba(240,151,42,${0.05 - r * 0.012})`;
+            ctx.lineWidth = 0.6;
+            ctx.setLineDash([4, 10]);
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Orbiting nodes
+        orbits.forEach(o => {
+            o.angle += o.speed;
+            const x = cx + Math.cos(o.angle) * o.radius;
+            const y = cy + Math.sin(o.angle) * o.radius;
+
+            // Glow
+            const grd = ctx.createRadialGradient(x, y, 0, x, y, o.size * 4);
+            grd.addColorStop(0, `rgba(${o.color},${o.alpha})`);
+            grd.addColorStop(1, `rgba(${o.color},0)`);
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(x, y, o.size * 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Core dot
+            ctx.fillStyle = `rgba(${o.color},${o.alpha + 0.2})`;
+            ctx.beginPath();
+            ctx.arc(x, y, o.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Pulsing "deal lines"
+        dealLines.forEach(dl => {
+            dl.pulse += dl.speed;
+            const a = dl.alpha * (0.5 + 0.5 * Math.sin(dl.pulse));
+            ctx.strokeStyle = `rgba(240,151,42,${a})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(dl.x1, dl.y1);
+            ctx.lineTo(dl.x2, dl.y2);
+            ctx.stroke();
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// ── CONTACT US: Message particles & radio waves ───────────────
+function initContactCanvas() {
+    const canvas = document.getElementById('contact-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const section = canvas.parentElement;
+
+    function resize() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+
+    // Floating message bubbles (tiny rectangles with rounded corners)
+    const bubbles = Array.from({ length: 14 }, () => ({
+        x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+        y: Math.random() * 600 + 100,
+        w: Math.random() * 50 + 30,
+        h: Math.random() * 16 + 10,
+        vy: -(Math.random() * 0.4 + 0.15),
+        vx: (Math.random() - 0.5) * 0.2,
+        alpha: Math.random() * 0.12 + 0.04,
+        r: 5,
+        type: Math.random() < 0.5 ? 'sent' : 'recv',   // sent=right-aligned amber, recv=left-aligned blue
+    }));
+
+    // Radio-wave ripples from the email icon position (top-left of contact)
+    const ripples = [];
+    setInterval(() => {
+        ripples.push({ r: 0, maxR: 120, alpha: 0.18 });
+    }, 1200);
+
+    let t = 0;
+
+    function draw() {
+        canvas.width = section.offsetWidth;
+        canvas.height = section.offsetHeight;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        t += 1;
+
+        // Radio ripples from top-left cluster (representing the email/phone icon area)
+        const rxBase = canvas.width * 0.15;
+        const ryBase = canvas.height  * 0.35;
+        for (let k = ripples.length - 1; k >= 0; k--) {
+            const rp = ripples[k];
+            rp.r  += 1.2;
+            rp.alpha -= 0.0012;
+            if (rp.alpha <= 0) { ripples.splice(k, 1); continue; }
+            ctx.strokeStyle = `rgba(111,163,240,${rp.alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(rxBase, ryBase, rp.r, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Floating chat bubbles
+        bubbles.forEach(b => {
+            b.x += b.vx;
+            b.y += b.vy;
+            // Wrap around
+            if (b.y + b.h < 0) {
+                b.y = canvas.height + b.h;
+                b.x = Math.random() * canvas.width;
+            }
+            if (b.x < -b.w) b.x = canvas.width;
+            if (b.x > canvas.width + b.w) b.x = -b.w;
+
+            const color = b.type === 'sent' ? '240,151,42' : '111,163,240';
+            ctx.fillStyle = `rgba(${color},${b.alpha})`;
+            ctx.strokeStyle = `rgba(${color},${b.alpha * 1.8})`;
+            ctx.lineWidth = 0.8;
+
+            // Rounded rect
+            const x = b.x, y = b.y, w = b.w, h = b.h, r = b.r;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Inner text lines (decorative)
+            ctx.fillStyle = `rgba(${color},${b.alpha * 2.5})`;
+            const lx = x + 6, lw = w - 12;
+            ctx.fillRect(lx, y + h * 0.3, lw * 0.7, 1.4);
+            if (h > 14) ctx.fillRect(lx, y + h * 0.6, lw * 0.45, 1.2);
+        });
+
+        // Subtle radar sweep from center-right (form side)
+        const sweepX = canvas.width * 0.72;
+        const sweepY = canvas.height * 0.5;
+        const sweepAngle = ((t * 0.012) % (Math.PI * 2));
+        const sweepLen = Math.min(canvas.width * 0.22, 200);
+
+        const grd = ctx.createLinearGradient(
+            sweepX, sweepY,
+            sweepX + Math.cos(sweepAngle) * sweepLen,
+            sweepY + Math.sin(sweepAngle) * sweepLen
+        );
+        grd.addColorStop(0, 'rgba(240,151,42,0.10)');
+        grd.addColorStop(1, 'rgba(240,151,42,0)');
+        ctx.strokeStyle = grd;
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sweepX, sweepY);
+        ctx.lineTo(sweepX + Math.cos(sweepAngle) * sweepLen, sweepY + Math.sin(sweepAngle) * sweepLen);
+        ctx.stroke();
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+}

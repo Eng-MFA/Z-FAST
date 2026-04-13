@@ -71,6 +71,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/team-info', require('./routes/teamInfo'));
 app.use('/api/team-members', require('./routes/teamMembers'));
 app.use('/api/sponsors', require('./routes/sponsors'));
+app.use('/api/partners', require('./routes/partners'));
+app.use('/api/media-coverage', require('./routes/mediaCoverage'));
 app.use('/api/seasons', require('./routes/seasons'));   // gallery routes included inside
 app.use('/api/news', require('./routes/news'));
 app.use('/api/car-specs', require('./routes/carSpecs'));
@@ -78,6 +80,7 @@ app.use('/api/cars', require('./routes/cars'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/about', require('./routes/about'));
+app.use('/api/backup', require('./routes/backup'));
 
 // ── SPA Fallback ──────────────────────────────────────────────
 app.get('*', (req, res) => {

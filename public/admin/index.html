@@ -46,9 +46,12 @@
                 <button class="sidebar-btn" data-panel="about">🖼️ About Us Slides</button>
                 <button class="sidebar-btn" data-panel="team-members">👥 Team Members</button>
                 <button class="sidebar-btn" data-panel="sponsors">🤝 Sponsors</button>
+                <button class="sidebar-btn" data-panel="partners">🤝 Partners</button>
+                <button class="sidebar-btn" data-panel="media-coverage">📺 Media</button>
                 <button class="sidebar-btn" data-panel="seasons">🏆 Achievements</button>
                 <button class="sidebar-btn" data-panel="news">📰 News</button>
                 <button class="sidebar-btn" data-panel="messages">✉️ Messages</button>
+                <button class="sidebar-btn" data-panel="backup">💾 Backup</button>
             </nav>
             <div class="sidebar-footer">
                 <a href="../index.html" class="sidebar-btn" target="_blank">🌐 View Site</a>
@@ -73,6 +76,14 @@
                     <div class="dash-card">
                         <div class="dash-num" id="dash-sponsors">-</div>
                         <div class="dash-label">Sponsors</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-partners">-</div>
+                        <div class="dash-label">Partners</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-num" id="dash-media">-</div>
+                        <div class="dash-label">Media</div>
                     </div>
                     <div class="dash-card">
                         <div class="dash-num" id="dash-seasons">-</div>
@@ -143,7 +154,6 @@
                                     <th>Photo</th>
                                     <th>Name</th>
                                     <th>Role</th>
-                                    <th>Department</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -172,6 +182,51 @@
                                 </tr>
                             </thead>
                             <tbody id="sponsors-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PARTNERS -->
+            <div id="panel-partners" class="panel">
+                <div class="panel-header">
+                    <h1>Partners</h1><button class="btn btn-primary" id="add-partner-btn">+ Add Partner</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="partners-table">
+                            <thead>
+                                <tr>
+                                    <th>Logo</th>
+                                    <th>Name</th>
+                                    <th>Website</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partners-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEDIA COVERAGE -->
+            <div id="panel-media-coverage" class="panel">
+                <div class="panel-header">
+                    <h1>Media Coverage</h1><button class="btn btn-primary" id="add-media-btn">+ Add Media</button>
+                </div>
+                <div class="panel-section">
+                    <div class="admin-table-wrap">
+                        <table class="admin-table" id="media-table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Caption</th>
+                                    <th>Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="media-tbody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -245,6 +300,61 @@
                     </div>
                 </div>
             </div>
+
+            <!-- BACKUP -->
+            <div id="panel-backup" class="panel">
+                <div class="panel-header">
+                    <h1>Backup &amp; Restore</h1>
+                </div>
+
+                <!-- Info Card -->
+                <div class="panel-section">
+                    <div id="backup-info-card" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;">
+                        <div class="dash-card"><div class="dash-num" id="bk-db-size">—</div><div class="dash-label">Database Size</div></div>
+                        <div class="dash-card"><div class="dash-num" id="bk-img-count">—</div><div class="dash-label">Images Stored</div></div>
+                        <div class="dash-card"><div class="dash-num" id="bk-total">—</div><div class="dash-label">Total Size</div></div>
+                    </div>
+                </div>
+
+                <!-- Download Backup -->
+                <div class="panel-section" style="margin-bottom:2rem;">
+                    <div style="background:rgba(240,151,42,0.06);border:1px solid rgba(240,151,42,0.2);border-radius:12px;padding:2rem;">
+                        <h3 style="color:var(--electric);margin-bottom:.5rem;">📥 Create Backup</h3>
+                        <p style="color:var(--gray-400);font-size:.9rem;margin-bottom:1.5rem;">Downloads a complete ZIP file containing your entire database and all uploaded images. Keep this file somewhere safe.</p>
+                        <button class="btn btn-primary" id="bk-download-btn" style="gap:.5rem;display:flex;align-items:center;">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+                            Download Backup
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Restore -->
+                <div class="panel-section">
+                    <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:2rem;">
+                        <h3 style="color:#ef4444;margin-bottom:.5rem;">⚠️ Restore from Backup</h3>
+                        <p style="color:var(--gray-400);font-size:.9rem;margin-bottom:.5rem;">Upload a previously downloaded backup ZIP file to restore all data. <strong style="color:#ef4444;">This will overwrite your current data!</strong></p>
+                        <p style="color:var(--gray-500);font-size:.82rem;margin-bottom:1.5rem;">After restore, you may need to restart the server for the database changes to take full effect.</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;">
+                            <label class="btn" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;cursor:pointer;" for="bk-restore-input">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:.4rem"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 8l5-5 5 5M12 3v12"/></svg>
+                                Choose Backup File
+                            </label>
+                            <input type="file" id="bk-restore-input" accept=".zip" style="display:none;" />
+                            <span id="bk-restore-filename" style="color:var(--gray-400);font-size:.85rem;">No file selected</span>
+                            <button class="btn" id="bk-restore-btn" disabled style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#ef4444;opacity:.5;">
+                                Restore Now
+                            </button>
+                        </div>
+                        <div id="bk-restore-progress" style="display:none;margin-top:1rem;">
+                            <div style="height:4px;background:rgba(239,68,68,0.15);border-radius:4px;overflow:hidden;">
+                                <div id="bk-restore-bar" style="height:100%;width:0%;background:#ef4444;transition:width .3s;"></div>
+                            </div>
+                            <p id="bk-restore-status" style="color:var(--gray-400);font-size:.85rem;margin-top:.5rem;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 

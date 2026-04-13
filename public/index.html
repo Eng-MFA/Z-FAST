@@ -29,8 +29,9 @@
         <li><a href="#about">About Us</a></li>
         <li><a href="#machine">The Machine</a></li>
         <li><a href="#team">Our Team</a></li>
+        <li><a href="#media-coverage">Media</a></li>
         <li><a href="#seasons">Achievements</a></li>
-        <li><a href="#sponsorship">Sponsorship & Partnership</a></li>
+        <li><a href="#sponsorship">Sponsors &amp; Partners</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -65,7 +66,8 @@
   <hr class="section-divider">
 
   <!-- ===== ABOUT US ===== -->
-  <section id="about" class="section">
+  <section id="about" class="section anim-section">
+    <canvas class="section-canvas" id="about-canvas"></canvas>
     <div class="section-header reveal">
       <span class="section-badge">Who We Are</span>
       <h2>About <span class="accent">Us</span></h2>
@@ -101,7 +103,8 @@
   <hr class="section-divider">
 
   <!-- ===== THE MACHINE ===== -->
-  <section id="machine" class="section">
+  <section id="machine" class="section anim-section">
+    <canvas class="section-canvas" id="machine-canvas"></canvas>
     <div class="section-header reveal">
       <span class="section-badge">Engineering Excellence</span>
       <h2>The <span class="accent">Machine</span></h2>
@@ -152,15 +155,42 @@
       <h2>Our <span class="accent">Team</span></h2>
       <p>Driven by passion. United by innovation.</p>
     </div>
-    <div class="team-dept-tabs reveal" id="team-tabs">
-      <button class="dept-tab active" data-dept="all">All</button>
-      <button class="dept-tab" data-dept="Technical">Technical</button>
-      <button class="dept-tab" data-dept="Operations">Operations</button>
-      <button class="dept-tab" data-dept="Management">Management</button>
-      <button class="dept-tab" data-dept="Marketing">Marketing</button>
-    </div>
+
     <div class="team-grid reveal" id="team-grid">
       <!-- Loaded from API -->
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ===== MEDIA COVERAGE ===== -->
+  <section id="media-coverage" class="section anim-section media-section">
+    <canvas class="section-canvas" id="media-canvas"></canvas>
+    <div class="section-header reveal">
+      <span class="section-badge" style="background:rgba(29,52,97,0.25);border-color:rgba(29,52,97,0.6);color:#6fa3f0">In The News</span>
+      <h2>Media <span class="accent">Coverage</span></h2>
+      <p>Our journey highlighted on screens around the world.</p>
+    </div>
+    
+    <div class="media-carousel-wrap reveal">
+      <button class="media-arrow media-arrow-prev" id="media-prev" aria-label="Previous media">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      
+      <div class="tv-screen">
+        <div class="tv-glass"></div>
+        <div id="tv-content">
+            <!-- Media slides rendered here -->
+        </div>
+      </div>
+      
+      <button class="media-arrow media-arrow-next" id="media-next" aria-label="Next media">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="media-caption-area reveal">
+      <p class="media-caption" id="media-caption"></p>
+      <div class="media-dots" id="media-dots"></div>
     </div>
   </section>
 
@@ -188,10 +218,11 @@
   <hr class="section-divider">
 
   <!-- ===== SPONSORSHIP & PARTNERSHIP ===== -->
-  <section id="sponsorship" class="section">
+  <section id="sponsorship" class="section anim-section">
+    <canvas class="section-canvas" id="sponsor-canvas"></canvas>
     <div class="section-header reveal">
       <span class="section-badge">Partnerships</span>
-      <h2>Sponsorship <span class="accent">&amp; Partnership</span></h2>
+      <h2>Sponsors <span class="accent">&amp; Partners</span></h2>
       <p id="sponsorship-subtitle">Drive Innovation, Shape the Future of Electric Racing.</p>
     </div>
     <div class="sponsor-benefits reveal">
@@ -223,6 +254,12 @@
         <!-- Loaded from API -->
       </div>
     </div>
+    <div class="sponsors-showcase reveal" style="margin-top:4rem;">
+      <h3 class="sponsors-label">Our Partners</h3>
+      <div class="sponsors-carousel" id="partners-carousel">
+        <!-- Loaded from API -->
+      </div>
+    </div>
     <div class="sponsor-cta reveal">
       <a href="#contact" class="btn btn-primary btn-large">Become a Partner</a>
       <p>Contact us to receive our full sponsorship package</p>
@@ -232,7 +269,8 @@
   <hr class="section-divider">
 
   <!-- ===== CONTACT ===== -->
-  <section id="contact" class="section">
+  <section id="contact" class="section anim-section">
+    <canvas class="section-canvas" id="contact-canvas"></canvas>
     <div class="section-header reveal">
       <span class="section-badge">Get In Touch</span>
       <h2>Contact <span class="accent">Us</span></h2>
@@ -320,11 +358,12 @@
         <a href="#about">About Us</a>
         <a href="#machine">The Machine</a>
         <a href="#team">Our Team</a>
+        <a href="#media">Media</a>
         <a href="#seasons">Achievements</a>
-        <a href="#sponsorship">Sponsorship & Partnership</a>
+        <a href="#sponsorship">Sponsors &amp; Partners</a>
         <a href="#contact">Contact</a>
       </div>
-      <p class="footer-copy">© 2025 Z-FAST Racing Team. All rights reserved.</p>
+      <p class="footer-copy">© 2018 - <span id="current-year"></span> Z-FAST Racing Team. All rights reserved.</p>
     </div>
   </footer>
 

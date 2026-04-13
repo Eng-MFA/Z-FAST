@@ -148,20 +148,25 @@ function loadPanel(name) {
     case 'about': loadAboutSlides(); break;
     case 'team-members': loadTeamMembers(); break;
     case 'sponsors': loadSponsors(); break;
+    case 'partners': loadPartners(); break;
+    case 'media-coverage': loadMediaCoverage(); break;
     case 'seasons': loadSeasons(); break;
     case 'news': loadNews(); break;
     case 'messages': loadMessages(); break;
+    case 'backup': loadBackup(); break;
   }
 }
 
 // ── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
-  const [members, sponsors, seasons, news, messages] = await Promise.all([
-    api('GET', '/team-members'), api('GET', '/sponsors'), api('GET', '/seasons'),
+  const [members, sponsors, partners, media, seasons, news, messages] = await Promise.all([
+    api('GET', '/team-members'), api('GET', '/sponsors'), api('GET', '/partners'), api('GET', '/media-coverage'), api('GET', '/seasons'),
     api('GET', '/news?limit=99'), api('GET', '/contact')
   ]);
   if (members) $('#dash-members').textContent = members.length;
   if (sponsors) $('#dash-sponsors').textContent = sponsors.length;
+  if (partners) $('#dash-partners').textContent = partners.length;
+  if (media) $('#dash-media').textContent = media.length;
   if (seasons) $('#dash-seasons').textContent = seasons.length;
   if (news) $('#dash-news').textContent = news.length;
   if (messages) {
@@ -285,7 +290,7 @@ async function loadTeamMembers() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${m.image ? `<img src="${API}${fixImg(m.image)}" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
-      <td><strong>${m.name}</strong></td><td>${m.role}</td><td>${m.department}</td>
+      <td><strong>${m.name}</strong></td><td>${m.role}</td>
       <td><div class="action-btns">
         <button class="btn-edit" onclick="editMember(${m.id})">Edit</button>
         <button class="btn-del" onclick="deleteMember(${m.id})">Delete</button>
@@ -301,18 +306,13 @@ window.editMember = async (id) => {
   openModal(id ? 'Edit Member' : 'Add Member', `
     <div class="form-group"><label>Name</label><input id="m-name" value="${m.name || ''}" /></div>
     <div class="form-group"><label>Role</label><input id="m-role" value="${m.role || ''}" /></div>
-    <div class="form-group"><label>Department</label>
-      <select id="m-dept">
-        ${['Technical', 'Operations', 'Management', 'Marketing'].map(d => `<option${m.department === d ? ' selected' : ''}>${d}</option>`).join('')}
-      </select>
-    </div>
     <div class="form-group"><label>Bio</label><textarea id="m-bio" rows="3">${m.bio || ''}</textarea></div>
     <div class="form-group"><label>LinkedIn URL</label><input id="m-linkedin" value="${m.linkedin || ''}" /></div>
     <div class="form-group"><label>Display Order</label><input type="number" id="m-order" value="${m.display_order || 0}" /></div>
     ${imageFieldHTML(m.image, 'member-img')}
   `, async () => {
     bindUpload('member-img');
-    const body = { name: $('#m-name').value, role: $('#m-role').value, department: $('#m-dept').value, bio: $('#m-bio').value, linkedin: $('#m-linkedin').value, display_order: parseInt($('#m-order').value) || 0, image: $('#member-img').value };
+    const body = { name: $('#m-name').value, role: $('#m-role').value, bio: $('#m-bio').value, linkedin: $('#m-linkedin').value, display_order: parseInt($('#m-order').value) || 0, image: $('#member-img').value };
     try {
       if (id) await api('PUT', `/team-members/${id}`, body); else await api('POST', '/team-members', body);
       toast('Member saved!'); closeModal(); loadTeamMembers();
@@ -385,6 +385,90 @@ window.editSponsor = async (id) => {
 window.deleteSponsor = async (id) => {
   if (!confirm('Delete this sponsor?')) return;
   try { await api('DELETE', `/sponsors/${id}`); toast('Deleted!'); loadSponsors(); } catch (e) { toast(e.message, 'error'); }
+};
+
+// ── Partners ──────────────────────────────────────────────────
+async function loadPartners() {
+  const partners = await api('GET', '/partners'); if (!partners) return;
+  const tbody = $('#partners-tbody'); tbody.innerHTML = '';
+  partners.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${s.logo ? `<img src="${API}${fixImg(s.logo)}" />` : '—'}</td>
+      <td><strong>${s.name}</strong></td>
+      <td><a href="${s.website}" target="_blank" style="color:var(--electric);font-size:0.8rem">${s.website !== '#' ? s.website : '—'}</a></td>
+      <td>${s.display_order}</td>
+      <td><div class="action-btns">
+        <button class="btn-edit" onclick="editPartner(${s.id})">Edit</button>
+        <button class="btn-del" onclick="deletePartner(${s.id})">Delete</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+$('#add-partner-btn').addEventListener('click', () => editPartner(null));
+
+window.editPartner = async (id) => {
+  const partners = await api('GET', '/partners');
+  const s = id ? partners.find(x => x.id === id) : {};
+  openModal(id ? 'Edit Partner' : 'Add Partner', `
+    <div class="form-group"><label>Name</label><input id="pt-name" value="${s.name || ''}" /></div>
+    <div class="form-group"><label>Website URL</label><input id="pt-website" value="${s.website || '#'}" /></div>
+    <div class="form-group"><label>Display Order</label><input type="number" id="pt-order" value="${s.display_order || 0}" /></div>
+    ${imageFieldHTML(s.logo, 'partner-img')}
+  `, async () => {
+    const body = { name: $('#pt-name').value, website: $('#pt-website').value, display_order: parseInt($('#pt-order').value) || 0, logo: $('#partner-img').value };
+    try {
+      if (id) await api('PUT', `/partners/${id}`, body); else await api('POST', '/partners', body);
+      toast('Partner saved!'); closeModal(); loadPartners();
+    } catch (e) { toast(e.message, 'error'); }
+  });
+  setTimeout(() => bindUpload('partner-img'), 100);
+};
+
+window.deletePartner = async (id) => {
+  if (!confirm('Delete this partner?')) return;
+  try { await api('DELETE', `/partners/${id}`); toast('Deleted!'); loadPartners(); } catch (e) { toast(e.message, 'error'); }
+};
+
+// ── Media Coverage ─────────────────────────────────────────────
+async function loadMediaCoverage() {
+  const media = await api('GET', '/media-coverage'); if (!media) return;
+  const tbody = $('#media-tbody'); tbody.innerHTML = '';
+  media.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m.image ? `<img src="${API}${fixImg(m.image)}" />` : '—'}</td>
+      <td>${m.caption || ''}</td>
+      <td>${m.display_order}</td>
+      <td><div class="action-btns">
+        <button class="btn-edit" onclick="editMedia(${m.id})">Edit</button>
+        <button class="btn-del" onclick="deleteMedia(${m.id})">Delete</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+$('#add-media-btn').addEventListener('click', () => editMedia(null));
+
+window.editMedia = async (id) => {
+  const media = await api('GET', '/media-coverage');
+  const m = id ? media.find(x => x.id === id) : {};
+  openModal(id ? 'Edit Media' : 'Add Media', `
+    <div class="form-group"><label>Caption</label><input id="md-caption" value="${m.caption || ''}" /></div>
+    <div class="form-group"><label>Display Order</label><input type="number" id="md-order" value="${m.display_order || 0}" /></div>
+    ${imageFieldHTML(m.image, 'media-img')}
+  `, async () => {
+    const body = { caption: $('#md-caption').value, display_order: parseInt($('#md-order').value) || 0, image: $('#media-img').value };
+    try {
+      if (id) await api('PUT', `/media-coverage/${id}`, body); else await api('POST', '/media-coverage', body);
+      toast('Media saved!'); closeModal(); loadMediaCoverage();
+    } catch (e) { toast(e.message, 'error'); }
+  });
+  setTimeout(() => bindUpload('media-img'), 100);
+};
+
+window.deleteMedia = async (id) => {
+  if (!confirm('Delete this media piece?')) return;
+  try { await api('DELETE', `/media-coverage/${id}`); toast('Deleted!'); loadMediaCoverage(); } catch (e) { toast(e.message, 'error'); }
 };
 
 // ── Seasons ───────────────────────────────────────────────────
@@ -659,6 +743,121 @@ window.deleteSeasonGalleryImg = async (seasonId, imgId, seasonTitle) => {
     window.manageSeasonGallery(seasonId, seasonTitle);
   } catch (e) { toast(e.message, 'error'); }
 };
+
+// ── Backup & Restore ─────────────────────────────────────────
+async function loadBackup() {
+  try {
+    const info = await api('GET', '/backup/info');
+    if (info) {
+      $('#bk-db-size').textContent   = info.database.sizeMB + ' MB';
+      $('#bk-img-count').textContent = info.uploads.count + ' files';
+      $('#bk-total').textContent     = info.totalMB + ' MB';
+
+      // Show/hide pending restore banner
+      let banner = $('#bk-pending-banner');
+      if (info.pendingRestore) {
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'bk-pending-banner';
+          banner.style.cssText = 'background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.4);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.5rem;color:#eab308;font-size:.9rem;display:flex;align-items:center;gap:.7rem;';
+          banner.innerHTML = '<span style="font-size:1.3rem;">⚠️</span><span><strong>Pending Restore:</strong> A database restore is staged and waiting. <strong>Restart the server</strong> to apply it.</span>';
+          const section = $('#backup-info-card').parentElement;
+          section.insertAdjacentElement('afterend', banner);
+        }
+      } else if (banner) {
+        banner.remove();
+      }
+    }
+  } catch { /* non‑critical */ }
+}
+
+// Download backup button
+$('#bk-download-btn').addEventListener('click', async () => {
+  const btn = $('#bk-download-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="opacity:.7">Preparing…</span>';
+  try {
+    const r = await fetch(API + '/api/backup/download', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!r.ok) throw new Error((await r.json()).error || 'Download failed');
+    const blob = await r.blob();
+    const cd   = r.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="(.+?)"/);
+    const filename = match ? match[1] : 'zfast_backup.zip';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ Backup downloaded: ' + filename);
+  } catch (e) {
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg> Download Backup';
+  }
+});
+
+// Restore file picker
+$('#bk-restore-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  const btn  = $('#bk-restore-btn');
+  if (file) {
+    $('#bk-restore-filename').textContent = file.name;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  } else {
+    $('#bk-restore-filename').textContent = 'No file selected';
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+  }
+});
+
+// Restore button
+$('#bk-restore-btn').addEventListener('click', async () => {
+  const file = $('#bk-restore-input').files[0];
+  if (!file) return;
+  if (!confirm('⚠️ This will OVERWRITE all current data with the backup. Are you sure?')) return;
+
+  const btn      = $('#bk-restore-btn');
+  const progress = $('#bk-restore-progress');
+  const bar      = $('#bk-restore-bar');
+  const status   = $('#bk-restore-status');
+
+  btn.disabled = true;
+  progress.style.display = 'block';
+  bar.style.width = '30%';
+  status.textContent = 'Uploading backup file…';
+
+  try {
+    const fd = new FormData();
+    fd.append('backup', file);
+    bar.style.width = '60%';
+    const r = await fetch(API + '/api/backup/restore', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd
+    });
+    bar.style.width = '90%';
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Restore failed');
+    bar.style.width = '100%';
+    bar.style.background = '#22c55e';
+    status.textContent = data.message;
+    status.style.color  = '#22c55e';
+    toast('✅ Restore complete! Please restart the server.');
+    $('#bk-restore-input').value = '';
+    $('#bk-restore-filename').textContent = 'No file selected';
+  } catch (e) {
+    bar.style.background = '#ef4444';
+    bar.style.width = '100%';
+    status.textContent = '❌ ' + e.message;
+    status.style.color  = '#ef4444';
+    toast('❌ ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 // ── Init ─────────────────────────────────────────────────────
 checkAuth();
