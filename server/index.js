@@ -21,28 +21,43 @@ app.use((req, res, next) => {
 });
 
 // ── CORS ─────────────────────────────────────────────────────
-// Auto-allows: localhost (any port), *.vercel.app, and any URL in ALLOWED_ORIGIN env
-const extraOrigins = (process.env.ALLOWED_ORIGIN || '')
+// CORS_OPEN_ALL=true  → allow every origin (current dev/HF stage)  ← DEFAULT
+// CORS_OPEN_ALL=false → restrict to whitelist only (production)
+const CORS_OPEN_ALL = process.env.CORS_OPEN_ALL !== 'false'; // default: open
+
+// Whitelist — used only when CORS_OPEN_ALL=false
+const extraOrigins = (process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '')
     .split(',').map(o => o.trim()).filter(Boolean);
 
 function isAllowedOrigin(origin) {
-    if (!origin) return true;                                        // same-origin / server-to-server
-    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;  // local dev
-    if (/\.vercel\.app$/.test(origin)) return true;                 // any Vercel preview/prod URL
-    if (origin === 'https://z-fast-racing-team.vercel.app') return true; // Explicit prod URL
-    if (/\.railway\.app$/.test(origin)) return true;                // Railway itself
-    if (extraOrigins.includes(origin)) return true;                  // custom ALLOWED_ORIGIN
+    if (!origin) return true;                                          // same-origin / server-to-server
+    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;    // local dev
+    if (/\.vercel\.app$/.test(origin)) return true;                   // any Vercel preview/prod URL
+    if (/\.hf\.space$/.test(origin)) return true;                     // Hugging Face Spaces
+    if (/^https?:\/\/(www\.)?z-fast\.tech$/.test(origin)) return true; // official domain
+    if (extraOrigins.includes(origin)) return true;                    // custom env var list
     return false;
 }
 
-app.use(cors({
-    origin: (origin, cb) => {
-        if (isAllowedOrigin(origin)) return cb(null, true);
-        console.warn('🚫 CORS blocked:', origin);
-        cb(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-}));
+const corsOptions = CORS_OPEN_ALL
+    ? {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      }
+    : {
+        origin: (origin, cb) => {
+            isAllowedOrigin(origin) ? cb(null, true) : cb(new Error(`CORS blocked: ${origin}`));
+        },
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      };
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight (OPTIONS) for all routes
+
+console.log(`🌐 CORS mode: ${CORS_OPEN_ALL ? 'OPEN (*)' : 'RESTRICTED (whitelist)'}`);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
