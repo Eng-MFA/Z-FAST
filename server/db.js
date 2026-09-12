@@ -74,11 +74,12 @@ _db.serialize(() => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     role TEXT NOT NULL,
-    department TEXT NOT NULL,
+    department TEXT NOT NULL DEFAULT 'Technical',
+    category TEXT DEFAULT 'current',
+    team_year TEXT DEFAULT '',
     bio TEXT,
     image TEXT,
     linkedin TEXT,
-    academic_year TEXT DEFAULT 'year_1',
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -311,18 +312,19 @@ _db.serialize(() => {
     }
   });
 
-  // ── Migrate Team Members (Academic Year / Generation) ───────
+  // ── Migrate Team Members (Category & Team Year) ─────────────
   _db.all("PRAGMA table_info(team_members)", (err, cols) => {
-    if (cols && !cols.some(c => c.name === 'academic_year')) {
-      _db.run("ALTER TABLE team_members ADD COLUMN academic_year TEXT DEFAULT 'year_1'", (aErr) => {
-        if (!aErr) {
-          console.log('✅ Migrated team_members: added academic_year column');
-          // Seed initial tiers based on roles if newly migrated
-          _db.run("UPDATE team_members SET academic_year = 'year_5' WHERE role LIKE '%Leader%' OR role LIKE '%Technical Head%' OR role LIKE '%Founder%'");
-          _db.run("UPDATE team_members SET academic_year = 'year_4' WHERE role LIKE '%Head%' AND role NOT LIKE '%Vice%' AND academic_year = 'year_1'");
-          _db.run("UPDATE team_members SET academic_year = 'year_3' WHERE role LIKE '%Vice Head%' AND academic_year = 'year_1'");
-        }
-      });
+    if (cols) {
+      if (!cols.some(c => c.name === 'category')) {
+        _db.run("ALTER TABLE team_members ADD COLUMN category TEXT DEFAULT 'current'", (aErr) => {
+          if (!aErr) console.log('✅ Migrated team_members: added category column');
+        });
+      }
+      if (!cols.some(c => c.name === 'team_year')) {
+        _db.run("ALTER TABLE team_members ADD COLUMN team_year TEXT DEFAULT ''", (aErr) => {
+          if (!aErr) console.log('✅ Migrated team_members: added team_year column');
+        });
+      }
     }
   });
 

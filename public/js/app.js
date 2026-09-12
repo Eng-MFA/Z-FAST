@@ -297,133 +297,145 @@ function animateCounter(el) {
 }
 
 // ── Academic Year / 5-Year Milestone Tiers ──────────────────
-const YEAR_TIERS = {
-    year_5: {
-        key: 'year_5',
-        order: 5,
-        badgeText: '5th Year · Founder',
-        icon: '👑',
-        themeClass: 'tier-gold',
-        filterLabel: '👑 5th Year / Founders'
-    },
-    year_4: {
-        key: 'year_4',
-        order: 4,
-        badgeText: '4th Year · Senior',
-        icon: '⚡',
-        themeClass: 'tier-purple',
-        filterLabel: '⚡ 4th Year'
-    },
-    year_3: {
-        key: 'year_3',
-        order: 3,
-        badgeText: '3rd Year · Specialist',
-        icon: '⚙️',
-        themeClass: 'tier-cyan',
-        filterLabel: '⚙️ 3rd Year'
-    },
-    year_2: {
-        key: 'year_2',
-        order: 2,
-        badgeText: '2nd Year · Rising',
-        icon: '🚀',
-        themeClass: 'tier-emerald',
-        filterLabel: '🚀 2nd Year'
-    },
-    year_1: {
-        key: 'year_1',
-        order: 1,
-        badgeText: '1st Year · Pioneer',
-        icon: '🌱',
-        themeClass: 'tier-steel',
-        filterLabel: '🌱 1st Year'
-    }
-};
-
-// ── Load Team Members ───────────────────────────────────────
+// ── Load Team Members (Current Team & Alumni) ─────────────────
 async function loadTeam() {
     const members = await apiFetch('/api/team-members');
     if (!members) return;
     const grid = document.getElementById('team-grid');
     if (!grid) return;
     const filterContainer = document.getElementById('team-filters');
-    let activeFilter = 'all';
+    
+    // Default active section is 'current'
+    let activeCategory = 'current';
 
-    // Setup interactive filter pills if container exists
+    const currentMembers = members.filter(m => (m.category || 'current') !== 'alumni');
+    const alumniMembers = members.filter(m => m.category === 'alumni');
+
     if (filterContainer) {
-        filterContainer.innerHTML = '';
-        const tierKeys = ['all', 'year_5', 'year_4', 'year_3', 'year_2', 'year_1'];
-        
-        tierKeys.forEach(key => {
-            const count = key === 'all'
-                ? members.length
-                : members.filter(m => (m.academic_year || 'year_1') === key).length;
-            
-            if (count === 0 && key !== 'all') return; // Skip empty tiers
-            
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = `team-filter-pill ${key === activeFilter ? 'active' : ''} ${key !== 'all' ? YEAR_TIERS[key].themeClass : 'tier-all'}`;
-            const label = key === 'all' ? 'All Generations' : YEAR_TIERS[key].filterLabel;
-            btn.innerHTML = `<span class="pill-label">${label}</span><span class="pill-count">${count}</span>`;
-            
+        filterContainer.innerHTML = `
+            <div class="team-tabs-wrapper">
+                <button type="button" class="team-tab-pill active" data-category="current">
+                    <span class="tab-icon">⚡</span>
+                    <span class="tab-label">Current Team</span>
+                    <span class="tab-count">${currentMembers.length}</span>
+                </button>
+                <button type="button" class="team-tab-pill" data-category="alumni">
+                    <span class="tab-icon">🎓</span>
+                    <span class="tab-label">Alumni &amp; Former Members</span>
+                    <span class="tab-count">${alumniMembers.length}</span>
+                </button>
+            </div>
+        `;
+
+        filterContainer.querySelectorAll('.team-tab-pill').forEach(btn => {
             btn.addEventListener('click', () => {
-                activeFilter = key;
-                filterContainer.querySelectorAll('.team-filter-pill').forEach(b => b.classList.remove('active'));
+                const cat = btn.getAttribute('data-category');
+                if (cat === activeCategory) return;
+                activeCategory = cat;
+                filterContainer.querySelectorAll('.team-tab-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 renderMembers();
             });
-            
-            filterContainer.appendChild(btn);
         });
     }
 
     function renderMembers() {
         grid.style.opacity = '0';
+        grid.style.transform = 'translateY(10px)';
         setTimeout(() => {
             grid.innerHTML = '';
-            const filtered = activeFilter === 'all'
-                ? members
-                : members.filter(m => (m.academic_year || 'year_1') === activeFilter);
+            const list = activeCategory === 'current' ? currentMembers : alumniMembers;
 
-            if (filtered.length === 0) {
-                grid.innerHTML = '<div class="team-empty-state"><p>No team members listed in this generation yet.</p></div>';
+            if (list.length === 0) {
+                const emptyTitle = activeCategory === 'current' 
+                    ? 'No current team members listed yet.' 
+                    : 'Honoring our past contributors — alumni records will appear here.';
+                grid.innerHTML = `
+                    <div class="team-empty-state">
+                        <div class="empty-icon">${activeCategory === 'current' ? '🏎️' : '🎓'}</div>
+                        <p>${emptyTitle}</p>
+                    </div>`;
                 grid.style.opacity = '1';
+                grid.style.transform = 'translateY(0)';
                 return;
             }
 
-            filtered.forEach(m => {
-                const yrKey = m.academic_year && YEAR_TIERS[m.academic_year] ? m.academic_year : 'year_1';
-                const tier = YEAR_TIERS[yrKey];
-                const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
-                const card = el('div', `member-card ${tier.themeClass}`);
-                card.setAttribute('data-tier', yrKey);
+            list.forEach(m => {
+                const initials = (m.name || 'Member').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+                const isAlumni = activeCategory === 'alumni';
+                const card = el('div', `member-card ${isAlumni ? 'member-card-alumni' : 'member-card-current'}`);
 
                 const linkedinBadge = m.linkedin && m.linkedin !== '#'
-                    ? `<a href="${m.linkedin}" class="member-linkedin-float" target="_blank" rel="noopener" title="View LinkedIn Profile" onclick="event.stopPropagation()">
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                    </a>` : '';
+                    ? `<a href="${m.linkedin}" class="member-linkedin-float" target="_blank" rel="noopener" title="Connect on LinkedIn" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                      </a>` : '';
 
-                card.innerHTML = `
-          <div class="member-img-wrap">
-            <div class="member-year-badge ${tier.themeClass}">
-              <span class="badge-icon">${tier.icon}</span>
-              <span class="badge-txt">${tier.badgeText}</span>
-            </div>
-            ${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder">${initials}</div>`}
-            <div class="member-hover-overlay"><p>${m.bio || 'Team member'}</p></div>
-            ${linkedinBadge}
-          </div>
-          <div class="member-info">
-            <div class="member-name">${m.name}</div>
-            <div class="member-role">${m.role}</div>
-          </div>`;
+                if (isAlumni) {
+                    // ── Alumni Card Template ──
+                    const yearTag = m.team_year ? `
+                        <div class="alumni-year-badge">
+                            <span class="alumni-year-icon">📅</span>
+                            <span class="alumni-year-val">${m.team_year}</span>
+                        </div>` : '';
+
+                    card.innerHTML = `
+                        <div class="member-img-wrap alumni-img-wrap">
+                            <div class="alumni-status-pill">
+                                <span class="alumni-status-icon">🎓</span>
+                                <span class="alumni-status-txt">Alumni</span>
+                            </div>
+                            ${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder alumni-avatar">${initials}</div>`}
+                            <div class="member-hover-overlay alumni-hover-overlay">
+                                <div class="alumni-legacy-title">Legacy &amp; Role</div>
+                                <p class="alumni-bio-txt">${m.bio || 'Proud contributor to the Z-FAST engineering journey and electric motorsport legacy.'}</p>
+                                ${m.linkedin && m.linkedin !== '#' ? `
+                                    <a href="${m.linkedin}" class="alumni-linkedin-action-btn" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                                        <span>View LinkedIn</span>
+                                    </a>
+                                ` : ''}
+                            </div>
+                            ${linkedinBadge}
+                        </div>
+                        <div class="member-info alumni-card-info">
+                            <div class="member-name">${m.name}</div>
+                            <div class="member-role alumni-role">${m.role}</div>
+                            ${yearTag}
+                        </div>
+                    `;
+                } else {
+                    // ── Current Team Card Template ──
+                    const yearPill = m.team_year ? `
+                        <div class="current-team-year">
+                            <span class="pulse-dot"></span>
+                            <span>${m.team_year}</span>
+                        </div>` : '';
+
+                    card.innerHTML = `
+                        <div class="member-img-wrap">
+                            ${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder">${initials}</div>`}
+                            <div class="member-hover-overlay">
+                                <p class="member-bio-txt">${m.bio || 'Developing next-generation electric racing technology with Z-FAST.'}</p>
+                            </div>
+                            ${linkedinBadge}
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">${m.name}</div>
+                            <div class="member-role">${m.role}</div>
+                            ${yearPill}
+                        </div>
+                    `;
+                }
+
                 grid.appendChild(card);
             });
+
             grid.style.opacity = '1';
+            grid.style.transform = 'translateY(0)';
         }, 180);
     }
-    grid.style.transition = 'opacity 0.2s ease';
+
+    grid.style.transition = 'opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
     renderMembers();
 }
 
@@ -717,10 +729,13 @@ async function loadRecruitmentAnnouncement() {
     }
 
     const data = await apiFetch('/api/recruitment');
+    const heroApplyBtn = document.getElementById('hero-apply-btn');
+
     if (!data) {
         el.style.display = 'none';
         el.innerHTML = '';
         currentRecruitmentData = null;
+        if (heroApplyBtn) heroApplyBtn.style.display = 'none';
         return;
     }
 
@@ -741,6 +756,25 @@ async function loadRecruitmentAnnouncement() {
     }
 
     const isVisible = Boolean(data.is_open) && !isExpired;
+
+    // Show or hide Hero Apply Button based on recruitment open status
+    if (heroApplyBtn) {
+        if (isVisible) {
+            heroApplyBtn.style.display = 'inline-flex';
+            heroApplyBtn.onclick = (e) => {
+                const recSec = document.getElementById('recruitment-showcase');
+                if (recSec && recSec.style.display !== 'none') {
+                    e.preventDefault();
+                    recSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    recSec.classList.remove('rec-highlight-pulse');
+                    void recSec.offsetWidth;
+                    recSec.classList.add('rec-highlight-pulse');
+                }
+            };
+        } else {
+            heroApplyBtn.style.display = 'none';
+        }
+    }
 
     if (!isVisible) {
         el.style.display = 'none';
@@ -847,6 +881,8 @@ async function loadRecruitmentAnnouncement() {
                 if (recCountdownTimer) clearInterval(recCountdownTimer);
                 el.style.display = 'none';
                 el.innerHTML = '';
+                const hBtn = document.getElementById('hero-apply-btn');
+                if (hBtn) hBtn.style.display = 'none';
                 return;
             }
 

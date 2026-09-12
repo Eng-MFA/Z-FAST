@@ -272,7 +272,16 @@
 
             <div id="panel-team-members" class="panel">
                 <div class="panel-header">
-                    <h1>Team Members</h1><button class="btn btn-primary" id="add-member-btn">+ Add Member</button>
+                    <div>
+                        <h1>Team Members</h1>
+                        <p class="panel-subtitle">Manage Current Team members &amp; Alumni / Former Members</p>
+                    </div>
+                    <button class="btn btn-primary" id="add-member-btn">+ Add Member</button>
+                </div>
+                <div class="admin-tabs-bar" id="admin-member-filters">
+                    <button class="admin-tab-btn active" data-filter="all">All Members <span class="tab-badge" id="admin-count-all">0</span></button>
+                    <button class="admin-tab-btn" data-filter="current">⚡ Current Team <span class="tab-badge" id="admin-count-current">0</span></button>
+                    <button class="admin-tab-btn" data-filter="alumni">🎓 Alumni &amp; Former <span class="tab-badge" id="admin-count-alumni">0</span></button>
                 </div>
                 <div class="panel-section">
                     <div class="admin-table-wrap">
@@ -282,7 +291,10 @@
                                     <th>Photo</th>
                                     <th>Name</th>
                                     <th>Role</th>
-                                    <th>Year / Generation</th>
+                                    <th>Category</th>
+                                    <th>Team / Grad Year</th>
+                                    <th>LinkedIn</th>
+                                    <th>Order</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>

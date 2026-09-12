@@ -288,26 +288,74 @@ window.deleteCar = async (id) => {
 // (Hero Stats panel removed — stats are now managed via Site Settings)
 
 // ── Team Members ──────────────────────────────────────────────
-const ACADEMIC_YEARS = {
-  year_5: { key: 'year_5', num: 5, label: '👑 سنة خامسة / خريج ومؤسس (5th Year / Founder)', shortLabel: '👑 5th Year · Founder', cls: 'badge-tier-gold' },
-  year_4: { key: 'year_4', num: 4, label: '⚡ سنة رابعة (4th Year / Senior)', shortLabel: '⚡ 4th Year · Senior', cls: 'badge-tier-purple' },
-  year_3: { key: 'year_3', num: 3, label: '⚙️ سنة ثالثة (3rd Year / Specialist)', shortLabel: '⚙️ 3rd Year · Junior', cls: 'badge-tier-cyan' },
-  year_2: { key: 'year_2', num: 2, label: '🚀 سنة ثانية (2nd Year / Rising)', shortLabel: '🚀 2nd Year · Sophomore', cls: 'badge-tier-emerald' },
-  year_1: { key: 'year_1', num: 1, label: '🌱 سنة أولى (1st Year / Pioneer)', shortLabel: '🌱 1st Year · Freshman', cls: 'badge-tier-steel' }
-};
+let adminTeamFilter = 'all';
+let allCachedMembers = [];
 
-async function loadTeamMembers() {
-  const members = await api('GET', '/team-members'); if (!members) return;
-  const tbody = $('#members-tbody'); tbody.innerHTML = '';
-  members.forEach(m => {
-    const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
-    const yr = ACADEMIC_YEARS[m.academic_year] || ACADEMIC_YEARS['year_1'];
+function setupTeamMemberFilterButtons() {
+  const container = $('#admin-member-filters');
+  if (!container || container.dataset.initialized) return;
+  container.dataset.initialized = 'true';
+  container.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      adminTeamFilter = btn.dataset.filter || 'all';
+      container.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTeamMembersTable();
+    });
+  });
+}
+
+function renderTeamMembersTable() {
+  const tbody = $('#members-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const totalCount = allCachedMembers.length;
+  const currentCount = allCachedMembers.filter(m => (m.category || 'current') !== 'alumni').length;
+  const alumniCount = allCachedMembers.filter(m => m.category === 'alumni').length;
+
+  if ($('#admin-count-all')) $('#admin-count-all').textContent = totalCount;
+  if ($('#admin-count-current')) $('#admin-count-current').textContent = currentCount;
+  if ($('#admin-count-alumni')) $('#admin-count-alumni').textContent = alumniCount;
+
+  const filtered = allCachedMembers.filter(m => {
+    if (adminTeamFilter === 'current') return (m.category || 'current') !== 'alumni';
+    if (adminTeamFilter === 'alumni') return m.category === 'alumni';
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray-500);">No team members found in this category.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(m => {
+    const initials = (m.name || 'Member').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const isAlumni = m.category === 'alumni';
+    const catBadge = isAlumni
+      ? `<span class="admin-cat-badge cat-alumni">🎓 Alumni</span>`
+      : `<span class="admin-cat-badge cat-current">⚡ Current</span>`;
+
+    const yearDisplay = m.team_year
+      ? `<span class="admin-year-text">📅 ${m.team_year}</span>`
+      : `<span style="color:var(--gray-500);font-size:0.8rem">—</span>`;
+
+    const linkedinDisplay = m.linkedin && m.linkedin !== '#'
+      ? `<a href="${m.linkedin}" target="_blank" rel="noopener" class="admin-linkedin-link" title="${m.linkedin}">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          LinkedIn
+         </a>`
+      : `<span style="color:var(--gray-500);font-size:0.8rem">—</span>`;
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${m.image ? `<img src="${API}${fixImg(m.image)}" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
+      <td>${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
       <td><strong>${m.name}</strong></td>
       <td>${m.role}</td>
-      <td><span class="admin-year-badge ${yr.cls}">${yr.shortLabel}</span></td>
+      <td>${catBadge}</td>
+      <td>${yearDisplay}</td>
+      <td>${linkedinDisplay}</td>
+      <td><span class="admin-order-badge">${m.display_order ?? 0}</span></td>
       <td><div class="action-btns">
         <button class="btn-edit" onclick="editMember(${m.id})">Edit</button>
         <button class="btn-del" onclick="deleteMember(${m.id})">Delete</button>
@@ -315,42 +363,87 @@ async function loadTeamMembers() {
     tbody.appendChild(tr);
   });
 }
-$('#add-member-btn').addEventListener('click', () => editMember(null));
+
+async function loadTeamMembers() {
+  setupTeamMemberFilterButtons();
+  const members = await api('GET', '/team-members');
+  if (!members) return;
+  allCachedMembers = members;
+  renderTeamMembersTable();
+}
+
+if ($('#add-member-btn')) {
+  $('#add-member-btn').addEventListener('click', () => editMember(null));
+}
 
 window.editMember = async (id) => {
   const members = await api('GET', '/team-members');
   const m = id ? members.find(x => x.id === id) : {};
-  const currentYear = m.academic_year || 'year_1';
-  const yearOptions = Object.values(ACADEMIC_YEARS).map(y => 
-    `<option value="${y.key}" ${currentYear === y.key ? 'selected' : ''}>${y.label}</option>`
-  ).join('');
+  const currentCat = m.category === 'alumni' ? 'alumni' : 'current';
 
-  openModal(id ? 'Edit Member' : 'Add Member', `
-    <div class="form-group"><label>Name</label><input id="m-name" value="${m.name || ''}" /></div>
-    <div class="form-group"><label>Role</label><input id="m-role" value="${m.role || ''}" /></div>
+  openModal(id ? 'Edit Team Member' : 'Add Team Member', `
     <div class="form-group">
-      <label>Academic Year / Generation (السنة الدراسية أو الجيل)</label>
-      <select id="m-year">${yearOptions}</select>
+      <label>Category (التصنيف) *</label>
+      <select id="m-category" class="admin-select-input">
+        <option value="current" ${currentCat === 'current' ? 'selected' : ''}>⚡ Current Team (الفريق الحالي)</option>
+        <option value="alumni" ${currentCat === 'alumni' ? 'selected' : ''}>🎓 Alumni &amp; Former (الأعضاء السابقين والخريجين)</option>
+      </select>
+      <small class="form-hint">حدد إذا كان العضو حالياً في الفريق أو عضواً سابقاً / خريجاً</small>
     </div>
-    <div class="form-group"><label>Bio</label><textarea id="m-bio" rows="3">${m.bio || ''}</textarea></div>
-    <div class="form-group"><label>LinkedIn URL</label><input id="m-linkedin" value="${m.linkedin || ''}" /></div>
-    <div class="form-group"><label>Display Order</label><input type="number" id="m-order" value="${m.display_order || 0}" /></div>
+    <div class="form-group">
+      <label>Name (الاسم) *</label>
+      <input id="m-name" value="${m.name || ''}" placeholder="e.g. Mohamed Fouad" required />
+    </div>
+    <div class="form-group">
+      <label>Role / Position (الدور أو المنصب) *</label>
+      <input id="m-role" value="${m.role || ''}" placeholder="e.g. Aerodynamics Lead / Former Team Captain" required />
+    </div>
+    <div class="form-group">
+      <label>Team Year / Graduation Year (سنة التواجد في الفريق أو سنة التخرج)</label>
+      <input id="m-team-year" value="${m.team_year || ''}" placeholder="e.g. 2023 - 2024 or Class of 2024" />
+      <small class="form-hint">تظهر بوضوح على كارت العضو (مهمة جداً للأعضاء السابقين والخريجين)</small>
+    </div>
+    <div class="form-group">
+      <label>LinkedIn Profile URL (رابط حساب لينكد إن)</label>
+      <input id="m-linkedin" value="${m.linkedin || ''}" placeholder="https://www.linkedin.com/in/username" />
+    </div>
+    <div class="form-group">
+      <label>Bio / Description (نبذة أو إنجازات)</label>
+      <textarea id="m-bio" rows="3" placeholder="A brief note about their contribution or role...">${m.bio || ''}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Display Order (ترتيب الظهور)</label>
+      <input type="number" id="m-order" value="${m.display_order ?? 0}" />
+      <small class="form-hint">الرقم الأقل يظهر أولاً (مثلاً: 1 يظهر قبل 2)</small>
+    </div>
     ${imageFieldHTML(m.image, 'member-img')}
   `, async () => {
     bindUpload('member-img');
+    const nameVal = $('#m-name').value.trim();
+    const roleVal = $('#m-role').value.trim();
+    if (!nameVal || !roleVal) {
+      toast('Please enter Name and Role', 'error');
+      return;
+    }
     const body = { 
-      name: $('#m-name').value, 
-      role: $('#m-role').value, 
-      academic_year: $('#m-year').value,
-      bio: $('#m-bio').value, 
-      linkedin: $('#m-linkedin').value, 
+      name: nameVal, 
+      role: roleVal, 
+      category: $('#m-category').value,
+      team_year: $('#m-team-year').value.trim(),
+      bio: $('#m-bio').value.trim(), 
+      linkedin: $('#m-linkedin').value.trim(), 
       display_order: parseInt($('#m-order').value) || 0, 
       image: $('#member-img').value 
     };
     try {
-      if (id) await api('PUT', `/team-members/${id}`, body); else await api('POST', '/team-members', body);
-      toast('Member saved!'); closeModal(); loadTeamMembers();
-    } catch (e) { toast(e.message, 'error'); }
+      if (id) await api('PUT', `/team-members/${id}`, body);
+      else await api('POST', '/team-members', body);
+      toast('Member saved successfully!');
+      closeModal();
+      loadTeamMembers();
+    } catch (e) {
+      toast(e.message, 'error');
+    }
   });
   setTimeout(() => bindUpload('member-img'), 100);
 };

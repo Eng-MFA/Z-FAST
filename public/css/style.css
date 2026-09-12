@@ -1003,174 +1003,130 @@ h3 {
 }
 
 /* ============================================================
-   TEAM SECTION
+   TEAM SECTION (Current Team & Alumni)
    ============================================================ */
-.team-dept-tabs {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  max-width: var(--container);
-  margin: 0 auto 3rem;
-  padding: 0 2rem;
-}
-
-.dept-tab {
-  padding: 8px 20px;
-  border-radius: 50px;
-  font-family: var(--font-head);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--gray-300);
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
-.dept-tab:hover {
-  border-color: var(--electric);
-  color: var(--electric);
-}
-
-.dept-tab.active {
-  background: linear-gradient(135deg, #1d3461, #0f1e3b);
-  border-color: var(--navy);
-  color: var(--white);
-  box-shadow: 0 0 20px rgba(29, 52, 97, 0.5);
-}
-
-.dept-tab.active:hover {
-  background: linear-gradient(135deg, #2a4a8a, #1d3461);
-}
-/* ── Team Filters (5-Year Milestone Gradation) ── */
+.team-switch-tabs,
 .team-filters {
   max-width: var(--container);
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 3rem;
   padding: 0 1.5rem;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.75rem;
 }
 
-.team-filter-pill {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.team-tabs-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 6px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  position: relative;
+}
+
+.team-tab-pill {
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--gray-300);
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  padding: 0.45rem 1rem;
+  padding: 0.6rem 1.4rem;
   border-radius: 50px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: all var(--transition);
-  backdrop-filter: blur(8px);
+  gap: 0.55rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
 }
 
-.team-filter-pill:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+.team-tab-pill:hover {
   color: var(--white);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.team-filter-pill .pill-count {
-  font-size: 0.72rem;
-  padding: 1px 7px;
+.team-tab-pill .tab-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.team-tab-pill .tab-count {
+  font-size: 0.75rem;
+  padding: 2px 8px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.08);
+  color: var(--gray-300);
   font-weight: 700;
-  transition: all var(--transition);
+  transition: all 0.3s ease;
 }
 
-.team-filter-pill.tier-all.active {
-  background: rgba(240, 151, 42, 0.15);
-  border-color: var(--electric);
-  color: #ffedd5;
-  box-shadow: 0 0 20px rgba(240, 151, 42, 0.35);
+/* Active State for Current Team */
+.team-tab-pill[data-category="current"].active {
+  background: linear-gradient(135deg, rgba(240, 151, 42, 0.25), rgba(29, 52, 97, 0.45));
+  border-color: rgba(240, 151, 42, 0.7);
+  color: #fff;
+  box-shadow: 0 0 25px rgba(240, 151, 42, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
-.team-filter-pill.tier-all.active .pill-count {
+
+.team-tab-pill[data-category="current"].active .tab-count {
   background: var(--electric);
-  color: var(--black);
+  color: #000;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(240, 151, 42, 0.5);
 }
 
-.team-filter-pill.tier-gold.active {
-  background: rgba(245, 158, 11, 0.18);
-  border-color: #f59e0b;
+/* Active State for Alumni */
+.team-tab-pill[data-category="alumni"].active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(180, 83, 9, 0.35));
+  border-color: rgba(245, 158, 11, 0.7);
   color: #fef08a;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
-.team-filter-pill.tier-gold.active .pill-count {
+
+.team-tab-pill[data-category="alumni"].active .tab-count {
   background: #f59e0b;
   color: #000;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
 }
 
-.team-filter-pill.tier-purple.active {
-  background: rgba(168, 85, 247, 0.18);
-  border-color: #a855f7;
-  color: #f3e8ff;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-}
-.team-filter-pill.tier-purple.active .pill-count {
-  background: #a855f7;
-  color: #fff;
-}
-
-.team-filter-pill.tier-cyan.active {
-  background: rgba(56, 189, 248, 0.18);
-  border-color: #38bdf8;
-  color: #e0f2fe;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-}
-.team-filter-pill.tier-cyan.active .pill-count {
-  background: #38bdf8;
-  color: #000;
-}
-
-.team-filter-pill.tier-emerald.active {
-  background: rgba(52, 211, 153, 0.18);
-  border-color: #34d399;
-  color: #ecfdf5;
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
-}
-.team-filter-pill.tier-emerald.active .pill-count {
-  background: #34d399;
-  color: #000;
-}
-
-.team-filter-pill.tier-steel.active {
-  background: rgba(148, 163, 184, 0.18);
-  border-color: #94a3b8;
-  color: #f8fafc;
-  box-shadow: 0 0 20px rgba(148, 163, 184, 0.35);
-}
-.team-filter-pill.tier-steel.active .pill-count {
-  background: #94a3b8;
-  color: #000;
-}
-
+/* ── Empty State ── */
 .team-empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 3rem 1rem;
-  color: var(--gray-400);
-  font-size: 1rem;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
+.team-empty-state .empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.team-empty-state p {
+  color: var(--gray-300);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ── Team Grid ── */
 .team-grid {
   max-width: var(--container);
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem;
 }
 
 /* ── Base Member Card ── */
@@ -1183,73 +1139,34 @@ h3 {
   position: relative;
   cursor: pointer;
   backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
 }
 
-/* ── 5-Year Milestone Custom Glowing Frames ── */
-
-/* Tier 5: Gold & Solar Flare (Year 5 / Founders & Graduates) */
-.member-card.tier-gold {
-  border: 1.5px solid rgba(245, 158, 11, 0.6);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 20px rgba(245, 158, 11, 0.22);
-  animation: goldAuraPulse 4.5s ease-in-out infinite;
+/* ── Current Team Card Styling ── */
+.member-card-current {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
-.member-card.tier-gold:hover {
+
+.member-card-current:hover {
+  border-color: rgba(240, 151, 42, 0.6);
+  transform: translateY(-8px);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65), 0 0 32px rgba(240, 151, 42, 0.3);
+}
+
+/* ── Alumni Card Styling (Prestigious Recognition) ── */
+.member-card-alumni {
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(245, 158, 11, 0.12);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.03) 0%, rgba(15, 23, 42, 0.6) 100%);
+  position: relative;
+}
+
+.member-card-alumni:hover {
   border-color: #fbbf24;
   transform: translateY(-8px);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 38px rgba(245, 158, 11, 0.5), inset 0 0 15px rgba(245, 158, 11, 0.15);
-}
-
-/* Tier 4: Cyber Violet & Neon Magenta (Year 4 / Senior) */
-.member-card.tier-purple {
-  border: 1.5px solid rgba(168, 85, 247, 0.5);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 18px rgba(168, 85, 247, 0.2);
-}
-.member-card.tier-purple:hover {
-  border-color: #c084fc;
-  transform: translateY(-8px);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 34px rgba(168, 85, 247, 0.45);
-}
-
-/* Tier 3: Electric Cyan & Ice Tech (Year 3 / Specialist) */
-.member-card.tier-cyan {
-  border: 1.5px solid rgba(56, 189, 248, 0.5);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 18px rgba(56, 189, 248, 0.2);
-}
-.member-card.tier-cyan:hover {
-  border-color: #38bdf8;
-  transform: translateY(-8px);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 34px rgba(56, 189, 248, 0.45);
-}
-
-/* Tier 2: Kinetic Emerald & Racing Mint (Year 2 / Rising) */
-.member-card.tier-emerald {
-  border: 1.5px solid rgba(52, 211, 153, 0.45);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 16px rgba(52, 211, 153, 0.18);
-}
-.member-card.tier-emerald:hover {
-  border-color: #34d399;
-  transform: translateY(-8px);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(52, 211, 153, 0.4);
-}
-
-/* Tier 1: Steel Frost & Cobalt Blue (Year 1 / Pioneer) */
-.member-card.tier-steel {
-  border: 1.5px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 14px rgba(148, 163, 184, 0.15);
-}
-.member-card.tier-steel:hover {
-  border-color: #cbd5e1;
-  transform: translateY(-8px);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6), 0 0 28px rgba(148, 163, 184, 0.35);
-}
-
-@keyframes goldAuraPulse {
-  0%, 100% {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 18px rgba(245, 158, 11, 0.22);
-  }
-  50% {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45), 0 0 30px rgba(245, 158, 11, 0.42), inset 0 0 12px rgba(245, 158, 11, 0.08);
-  }
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(245, 158, 11, 0.35);
 }
 
 /* ── Member Image Wrap ── */
@@ -1284,106 +1201,52 @@ h3 {
   color: rgba(240, 151, 42, 0.5);
 }
 
-/* ── Floating Milestone Badge ── */
-.member-year-badge {
+.alumni-avatar {
+  background: linear-gradient(135deg, #2a1f0d 0%, #151108 100%);
+  color: rgba(245, 158, 11, 0.5);
+}
+
+/* ── Alumni Status Pill (Top-Left) ── */
+.alumni-status-pill {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   z-index: 10;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 4px 10px;
+  padding: 4px 11px;
   border-radius: 50px;
   font-family: var(--font-body);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  color: #fef08a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(245, 158, 11, 0.25);
   backdrop-filter: blur(10px);
-  transition: transform var(--transition);
-  user-select: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
 }
 
-.member-card:hover .member-year-badge {
+.member-card:hover .alumni-status-pill {
   transform: scale(1.05);
 }
 
-.member-year-badge .badge-icon {
-  font-size: 0.82rem;
+.alumni-status-icon {
+  font-size: 0.85rem;
   line-height: 1;
 }
 
-.member-year-badge.tier-gold {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(180, 83, 9, 0.25));
-  border: 1px solid rgba(251, 191, 36, 0.65);
-  color: #fef08a;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
-}
-
-.member-year-badge.tier-purple {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(126, 34, 206, 0.25));
-  border: 1px solid rgba(192, 132, 252, 0.65);
-  color: #f3e8ff;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
-}
-
-.member-year-badge.tier-cyan {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(2, 132, 199, 0.25));
-  border: 1px solid rgba(125, 211, 252, 0.65);
-  color: #e0f2fe;
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
-}
-
-.member-year-badge.tier-emerald {
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.35), rgba(16, 185, 129, 0.25));
-  border: 1px solid rgba(110, 231, 183, 0.65);
-  color: #ecfdf5;
-  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.35);
-}
-
-.member-year-badge.tier-steel {
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.3), rgba(71, 85, 105, 0.25));
-  border: 1px solid rgba(203, 213, 225, 0.55);
-  color: #f8fafc;
-  box-shadow: 0 4px 14px rgba(148, 163, 184, 0.3);
-}
-
-/* ── Hover Overlay ── */
-.member-hover-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(29, 52, 97, 0.92));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  opacity: 0;
-  transition: opacity var(--transition);
-  padding: 1.5rem;
-  text-align: center;
-}
-
-.member-card:hover .member-hover-overlay {
-  opacity: 1;
-}
-
-.member-hover-overlay p {
-  font-size: 0.9rem;
-  color: var(--white);
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-/* ── LinkedIn Float Badge ── */
+/* ── LinkedIn Float Badge (Top-Right) ── */
 .member-linkedin-float {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   z-index: 10;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   background: rgba(10, 102, 194, 0.9);
   color: white;
@@ -1391,25 +1254,94 @@ h3 {
   align-items: center;
   justify-content: center;
   transition: all var(--transition);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .member-linkedin-float:hover {
   background: #0a66c2;
   transform: scale(1.15);
-  box-shadow: 0 4px 16px rgba(10, 102, 194, 0.5);
+  box-shadow: 0 5px 20px rgba(10, 102, 194, 0.6);
 }
 
 .member-linkedin-float svg {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
 }
 
-/* ── Member Info ── */
+/* ── Hover Overlay ── */
+.member-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(8, 14, 26, 0.95), rgba(29, 52, 97, 0.94));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transition: opacity var(--transition);
+  padding: 1.5rem;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+
+.member-card:hover .member-hover-overlay {
+  opacity: 1;
+}
+
+.member-bio-txt {
+  font-size: 0.88rem;
+  color: var(--white);
+  font-weight: 500;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Alumni specific hover elements */
+.alumni-hover-overlay {
+  background: linear-gradient(135deg, rgba(15, 12, 6, 0.96), rgba(35, 26, 12, 0.95));
+}
+
+.alumni-legacy-title {
+  font-family: var(--font-head);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #fbbf24;
+}
+
+.alumni-linkedin-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(10, 102, 194, 0.95);
+  color: #fff;
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.alumni-linkedin-action-btn:hover {
+  background: #0077b5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5);
+}
+
+/* ── Member Info Area ── */
 .member-info {
   padding: 1.25rem 1.2rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.04) 100%);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .member-name {
@@ -1418,62 +1350,75 @@ h3 {
   font-size: 1.05rem;
   letter-spacing: 0.01em;
   color: var(--white);
+  line-height: 1.3;
 }
 
 .member-role {
-  font-size: 0.82rem;
+  font-size: 0.83rem;
   color: var(--electric);
   font-weight: 600;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
   display: block;
 }
 
-.member-card.tier-gold .member-role {
-  color: #fbbf24;
-}
-.member-card.tier-purple .member-role {
-  color: #d8b4fe;
-}
-.member-card.tier-cyan .member-role {
-  color: #7dd3fc;
-}
-.member-card.tier-emerald .member-role {
-  color: #6ee7b7;
-}
-.member-card.tier-steel .member-role {
-  color: #cbd5e1;
+/* Current team year indicator */
+.current-team-year {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-300);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px 9px;
+  border-radius: 20px;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.member-dept-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.current-team-year .pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+}
+
+/* Alumni Card Info specifics */
+.alumni-card-info {
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.02) 0%, rgba(245, 158, 11, 0.05) 100%);
+}
+
+.alumni-role {
+  color: #fbbf24;
+}
+
+.alumni-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #fef3c7;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
   padding: 3px 10px;
-  border-radius: 50px;
-  margin-top: 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--gray-300);
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.alumni-year-icon {
+  font-size: 0.8rem;
+  line-height: 1;
 }
 
 @media (max-width: 640px) {
   .team-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: 1.25rem;
     padding: 0 1rem;
-  }
-  .team-filters {
-    gap: 0.5rem;
-    padding: 0 0.75rem;
-  }
-  .team-filter-pill {
-    font-size: 0.76rem;
-    padding: 0.35rem 0.75rem;
-  }
-  .member-year-badge {
-    font-size: 0.66rem;
-    padding: 3px 8px;
   }
 }
 
@@ -2748,6 +2693,72 @@ h3 {
 /* ============================================================
    INTERACTIVE TOUR BUTTONS & BADGES
    ============================================================ */
+/* ── Hero Apply Now Button (Displayed only when Recruitment is Open) ── */
+.btn-hero-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.35));
+  border: 1.5px solid #10b981;
+  color: #a7f3d0;
+  font-family: var(--font-head);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.75rem 1.6rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: heroApplyPulse 2.4s ease-in-out infinite;
+  position: relative;
+  z-index: 5;
+}
+
+.btn-hero-apply:hover {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #022c22;
+  border-color: #34d399;
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.65), 0 0 15px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-hero-apply .apply-icon {
+  font-size: 1rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px #10b981);
+}
+
+@keyframes heroApplyPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.rec-highlight-pulse {
+  animation: recBoxHighlight 1.8s ease-out;
+}
+
+@keyframes recBoxHighlight {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+  35% {
+    transform: scale(1.02);
+    box-shadow: 0 0 45px rgba(16, 185, 129, 0.55);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
 .btn-tour {
   display: inline-flex;
   align-items: center;
