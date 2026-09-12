@@ -3,15 +3,15 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
+const { DB_PATH, RESTORE_PATH, initStorage } = require('./storage');
 
-// ── Path ──────────────────────────────────────────────────────
-const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+// ── Ensure Persistent Storage ─────────────────────────────────
+initStorage();
 
 // ── Restore-Swap ──────────────────────────────────────────────
 // If a backup restore wrote zfast.db.restore, apply it now before opening.
-const dbPath      = path.join(dataDir, 'zfast.db');
-const restorePath = path.join(dataDir, 'zfast.db.restore');
+const dbPath      = DB_PATH;
+const restorePath = RESTORE_PATH;
 if (fs.existsSync(restorePath)) {
     try {
         [dbPath + '-wal', dbPath + '-shm'].forEach(f => { try { fs.unlinkSync(f); } catch (_) {} });

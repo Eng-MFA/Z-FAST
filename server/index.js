@@ -62,18 +62,26 @@ console.log(`🌐 CORS mode: ${CORS_OPEN_ALL ? 'OPEN (*)' : 'RESTRICTED (whiteli
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ── Ensure Required Directories ───────────────────────────────
-const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-const dataDir = path.join(__dirname, '..', 'data');
-[uploadsDir, dataDir].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
+// ── Storage & Directories ─────────────────────────────────────
+const { DATA_DIR, UPLOADS_DIR, DB_PATH, initStorage } = require('./storage');
+initStorage();
 
 // ── Static Files ─────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '..', 'public'), {
     maxAge: isProd ? '1d' : 0,   // Cache static assets in production
     etag: true,
 }));
-app.use('/uploads', express.static(uploadsDir));
-app.use('/api/uploads', express.static(uploadsDir));
+
+// Serve persistent uploads (/data/uploads)
+app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/api/uploads', express.static(UPLOADS_DIR));
+
+// Fallback to bundled public/uploads if different from UPLOADS_DIR
+const bundledUploads = path.join(__dirname, '..', 'public', 'uploads');
+if (fs.existsSync(bundledUploads) && path.resolve(bundledUploads) !== path.resolve(UPLOADS_DIR)) {
+    app.use('/uploads', express.static(bundledUploads));
+    app.use('/api/uploads', express.static(bundledUploads));
+}
 
 // ── Initialize DB ─────────────────────────────────────────────
 const db = require('./db');
@@ -115,7 +123,10 @@ app.use((err, req, res, next) => {
 // ── Start ─────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🏎️  Z-FAST Server running`);
-    console.log(`🌍  Mode:   ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗  Local:  http://localhost:${PORT}`);
-    console.log(`📊  Admin:  http://localhost:${PORT}/admin\n`);
+    console.log(`🌍  Mode:     ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗  Local:    http://localhost:${PORT}`);
+    console.log(`📊  Admin:    http://localhost:${PORT}/admin`);
+    console.log(`💾  Storage:  ${DATA_DIR} ${DATA_DIR === '/data' ? '(Persistent Storage: Active)' : '(Local Directory)'}`);
+    console.log(`📁  Database: ${DB_PATH}`);
+    console.log(`🖼️  Uploads:  ${UPLOADS_DIR}\n`);
 });

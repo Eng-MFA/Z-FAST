@@ -6,10 +6,11 @@ const fs       = require('fs');
 const multer   = require('multer');
 const { requireAuth } = require('./auth');
 const db       = require('../db');
+const { DATA_DIR, UPLOADS_DIR, TMP_DIR, DB_PATH, RESTORE_PATH } = require('../storage');
 
-const dataDir    = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data');
-const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-const tmpDir     = path.join(dataDir, 'tmp');
+const dataDir    = DATA_DIR;
+const uploadsDir = UPLOADS_DIR;
+const tmpDir     = TMP_DIR;
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
 // ── multer for restore upload ─────────────────────────────────
