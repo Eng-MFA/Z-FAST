@@ -43,6 +43,7 @@
             <nav class="sidebar-nav">
                 <button class="sidebar-btn active" data-panel="dashboard">📊 Dashboard</button>
                 <button class="sidebar-btn" data-panel="team-info">⚙️ Site Settings</button>
+                <button class="sidebar-btn" data-panel="recruitment">🎯 Recruitment</button>
                 <button class="sidebar-btn" data-panel="cars">🏎️ Cars</button>
                 <button class="sidebar-btn" data-panel="about">🖼️ About Us Slides</button>
                 <button class="sidebar-btn" data-panel="team-members">👥 Team Members</button>
@@ -98,6 +99,10 @@
                         <div class="dash-num" id="dash-messages">-</div>
                         <div class="dash-label">Unread Messages</div>
                     </div>
+                    <div class="dash-card" id="dash-recruitment-card">
+                        <div class="dash-num" id="dash-recruitment" style="font-size:1.15rem;font-weight:700;">-</div>
+                        <div class="dash-label">Recruitment</div>
+                    </div>
                 </div>
                 <div class="panel-section">
                     <p style="color:var(--gray-300)">Welcome to the Z-FAST Admin Panel. Use the sidebar to manage your
@@ -112,6 +117,128 @@
                     <h1>Site Settings</h1><button class="btn btn-primary" id="save-team-info">Save Changes</button>
                 </div>
                 <div class="panel-section" id="team-info-form"></div>
+            </div>
+
+            <!-- RECRUITMENT SETTINGS -->
+            <div id="panel-recruitment" class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h1>Recruitment Settings (حالة التقديم)</h1>
+                        <p style="color:var(--gray-400);font-size:0.85rem;margin-top:0.25rem;">
+                            Control recruitment announcement, welcome text, application links, and auto-closing countdown.
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" id="save-recruitment-btn">💾 Save Settings</button>
+                </div>
+
+                <!-- Real-time Live Status Overview -->
+                <div class="panel-section" style="margin-bottom:1.5rem;">
+                    <div class="recruitment-status-banner" id="recruitment-status-banner">
+                        <div class="recruitment-status-info">
+                            <div class="status-indicator-wrap">
+                                <span class="status-pulse-dot" id="rec-status-dot"></span>
+                                <span class="status-title-text" id="rec-status-title">Checking status...</span>
+                            </div>
+                            <p class="status-sub-text" id="rec-status-detail">Loading recruitment settings...</p>
+                        </div>
+                        <div class="recruitment-countdown-box" id="rec-countdown-box" style="display:none;">
+                            <span class="countdown-label">Time Remaining</span>
+                            <div class="countdown-timer-display" id="rec-countdown-display">--:--:--:--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Settings -->
+                <div class="panel-section">
+                    <form id="recruitment-form" onsubmit="return false;">
+                        <!-- Master Switch Toggle -->
+                        <div class="form-card" style="margin-bottom:1.5rem;">
+                            <div class="toggle-control-row">
+                                <div>
+                                    <label class="toggle-main-label">Recruitment Status (isOpen)</label>
+                                    <p class="field-hint">When turned ON, the recruitment banner will be eligible to show on the website (provided deadline has not passed).</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="rec-is-open" />
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Deadline / Auto-closing Date -->
+                        <div class="form-card" style="margin-bottom:1.5rem;">
+                            <h3 style="color:var(--white);font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;">
+                                ⏳ Auto-Closing Deadline (closingDate)
+                            </h3>
+                            <p class="field-hint" style="margin-bottom:1rem;">
+                                Once this date and time arrives, recruitment closes automatically and disappears from the website even if the toggle is ON.
+                            </p>
+                            <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                                <input type="datetime-local" id="rec-closing-date" class="admin-input" style="max-width:320px;" />
+                                <button type="button" class="btn btn-secondary" id="rec-clear-date-btn" style="font-size:0.8rem;padding:0.5rem 1rem;">
+                                    ✕ Clear Deadline
+                                </button>
+                                <span id="rec-deadline-status-badge" class="badge-deadline"></span>
+                            </div>
+                        </div>
+
+                        <!-- Welcome Announcement & Message -->
+                        <div class="form-card" style="margin-bottom:1.5rem;">
+                            <h3 style="color:var(--white);font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;">
+                                📢 Announcement &amp; Welcome Content
+                            </h3>
+                            <div class="form-group" style="margin-bottom:1rem;">
+                                <label for="rec-welcome-title">Announcement Title / Headline</label>
+                                <input type="text" id="rec-welcome-title" class="admin-input" placeholder="e.g. Join the Z-FAST Electric Racing Team!" />
+                            </div>
+                            <div class="form-group">
+                                <label for="rec-welcome-message">Welcome Message / Description</label>
+                                <textarea id="rec-welcome-message" rows="4" class="admin-input" placeholder="Describe the open positions, what you expect from applicants, and instructions on how to apply..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Primary Button -->
+                        <div class="form-card" style="margin-bottom:1.5rem;">
+                            <h3 style="color:var(--white);font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem;">
+                                🔗 Primary Button (Main Application Link)
+                            </h3>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;">
+                                <div class="form-group">
+                                    <label for="rec-primary-text">Button Text</label>
+                                    <input type="text" id="rec-primary-text" class="admin-input" placeholder="e.g. Apply Now / قدم الآن" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="rec-primary-url">Button URL (Google Form / Application link)</label>
+                                    <input type="url" id="rec-primary-url" class="admin-input" placeholder="https://forms.google.com/..." />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Button -->
+                        <div class="form-card">
+                            <div class="toggle-control-row" style="margin-bottom:1rem;">
+                                <div>
+                                    <label class="toggle-main-label">Enable Secondary Button (Optional)</label>
+                                    <p class="field-hint">Add an optional second button for a recruitment guide or contact info.</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="rec-secondary-enabled" />
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div id="rec-secondary-fields" style="display:none;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;">
+                                <div class="form-group">
+                                    <label for="rec-secondary-text">Secondary Button Text</label>
+                                    <input type="text" id="rec-secondary-text" class="admin-input" placeholder="e.g. Recruitment Guide / دليل التقديم" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="rec-secondary-url">Secondary Button URL</label>
+                                    <input type="text" id="rec-secondary-url" class="admin-input" placeholder="e.g. https://... or #contact" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- CARS -->
@@ -155,6 +282,7 @@
                                     <th>Photo</th>
                                     <th>Name</th>
                                     <th>Role</th>
+                                    <th>Year / Generation</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>

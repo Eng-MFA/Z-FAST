@@ -96,6 +96,7 @@ app.use('/api/contact', require('./routes/contact'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/about', require('./routes/about'));
 app.use('/api/backup', require('./routes/backup'));
+app.use('/api/recruitment', require('./routes/recruitment'));
 
 // ── SPA Fallback ──────────────────────────────────────────────
 app.get('*', (req, res) => {

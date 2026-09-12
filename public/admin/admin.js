@@ -144,6 +144,7 @@ function loadPanel(name) {
   switch (name) {
     case 'dashboard': loadDashboard(); break;
     case 'team-info': loadTeamInfo(); break;
+    case 'recruitment': loadRecruitment(); break;
     case 'cars': loadCars(); break;
     case 'about': loadAboutSlides(); break;
     case 'team-members': loadTeamMembers(); break;
@@ -159,9 +160,9 @@ function loadPanel(name) {
 
 // ── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
-  const [members, sponsors, partners, media, seasons, news, messages] = await Promise.all([
+  const [members, sponsors, partners, media, seasons, news, messages, rec] = await Promise.all([
     api('GET', '/team-members'), api('GET', '/sponsors'), api('GET', '/partners'), api('GET', '/media-coverage'), api('GET', '/seasons'),
-    api('GET', '/news?limit=99'), api('GET', '/contact')
+    api('GET', '/news?limit=99'), api('GET', '/contact'), api('GET', '/recruitment').catch(() => null)
   ]);
   if (members) $('#dash-members').textContent = members.length;
   if (sponsors) $('#dash-sponsors').textContent = sponsors.length;
@@ -173,6 +174,11 @@ async function loadDashboard() {
     const unread = messages.filter(m => !m.read).length;
     $('#dash-messages').textContent = unread;
     $('#dash-messages-card').style.borderColor = unread > 0 ? 'rgba(255,62,62,0.4)' : 'var(--card-border)';
+  }
+  if (rec && $('#dash-recruitment')) {
+    const isAct = rec.is_active;
+    $('#dash-recruitment').textContent = isAct ? '🟢 Open' : '🔴 Closed';
+    $('#dash-recruitment').style.color = isAct ? '#10b981' : '#ef4444';
   }
 }
 
@@ -282,15 +288,26 @@ window.deleteCar = async (id) => {
 // (Hero Stats panel removed — stats are now managed via Site Settings)
 
 // ── Team Members ──────────────────────────────────────────────
+const ACADEMIC_YEARS = {
+  year_5: { key: 'year_5', num: 5, label: '👑 سنة خامسة / خريج ومؤسس (5th Year / Founder)', shortLabel: '👑 5th Year · Founder', cls: 'badge-tier-gold' },
+  year_4: { key: 'year_4', num: 4, label: '⚡ سنة رابعة (4th Year / Senior)', shortLabel: '⚡ 4th Year · Senior', cls: 'badge-tier-purple' },
+  year_3: { key: 'year_3', num: 3, label: '⚙️ سنة ثالثة (3rd Year / Specialist)', shortLabel: '⚙️ 3rd Year · Junior', cls: 'badge-tier-cyan' },
+  year_2: { key: 'year_2', num: 2, label: '🚀 سنة ثانية (2nd Year / Rising)', shortLabel: '🚀 2nd Year · Sophomore', cls: 'badge-tier-emerald' },
+  year_1: { key: 'year_1', num: 1, label: '🌱 سنة أولى (1st Year / Pioneer)', shortLabel: '🌱 1st Year · Freshman', cls: 'badge-tier-steel' }
+};
+
 async function loadTeamMembers() {
   const members = await api('GET', '/team-members'); if (!members) return;
   const tbody = $('#members-tbody'); tbody.innerHTML = '';
   members.forEach(m => {
     const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+    const yr = ACADEMIC_YEARS[m.academic_year] || ACADEMIC_YEARS['year_1'];
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${m.image ? `<img src="${API}${fixImg(m.image)}" />` : `<div class="placeholder-avatar">${initials}</div>`}</td>
-      <td><strong>${m.name}</strong></td><td>${m.role}</td>
+      <td><strong>${m.name}</strong></td>
+      <td>${m.role}</td>
+      <td><span class="admin-year-badge ${yr.cls}">${yr.shortLabel}</span></td>
       <td><div class="action-btns">
         <button class="btn-edit" onclick="editMember(${m.id})">Edit</button>
         <button class="btn-del" onclick="deleteMember(${m.id})">Delete</button>
@@ -303,16 +320,33 @@ $('#add-member-btn').addEventListener('click', () => editMember(null));
 window.editMember = async (id) => {
   const members = await api('GET', '/team-members');
   const m = id ? members.find(x => x.id === id) : {};
+  const currentYear = m.academic_year || 'year_1';
+  const yearOptions = Object.values(ACADEMIC_YEARS).map(y => 
+    `<option value="${y.key}" ${currentYear === y.key ? 'selected' : ''}>${y.label}</option>`
+  ).join('');
+
   openModal(id ? 'Edit Member' : 'Add Member', `
     <div class="form-group"><label>Name</label><input id="m-name" value="${m.name || ''}" /></div>
     <div class="form-group"><label>Role</label><input id="m-role" value="${m.role || ''}" /></div>
+    <div class="form-group">
+      <label>Academic Year / Generation (السنة الدراسية أو الجيل)</label>
+      <select id="m-year">${yearOptions}</select>
+    </div>
     <div class="form-group"><label>Bio</label><textarea id="m-bio" rows="3">${m.bio || ''}</textarea></div>
     <div class="form-group"><label>LinkedIn URL</label><input id="m-linkedin" value="${m.linkedin || ''}" /></div>
     <div class="form-group"><label>Display Order</label><input type="number" id="m-order" value="${m.display_order || 0}" /></div>
     ${imageFieldHTML(m.image, 'member-img')}
   `, async () => {
     bindUpload('member-img');
-    const body = { name: $('#m-name').value, role: $('#m-role').value, bio: $('#m-bio').value, linkedin: $('#m-linkedin').value, display_order: parseInt($('#m-order').value) || 0, image: $('#member-img').value };
+    const body = { 
+      name: $('#m-name').value, 
+      role: $('#m-role').value, 
+      academic_year: $('#m-year').value,
+      bio: $('#m-bio').value, 
+      linkedin: $('#m-linkedin').value, 
+      display_order: parseInt($('#m-order').value) || 0, 
+      image: $('#member-img').value 
+    };
     try {
       if (id) await api('PUT', `/team-members/${id}`, body); else await api('POST', '/team-members', body);
       toast('Member saved!'); closeModal(); loadTeamMembers();
@@ -856,6 +890,181 @@ $('#bk-restore-btn').addEventListener('click', async () => {
     toast('❌ ' + e.message, 'error');
   } finally {
     btn.disabled = false;
+  }
+});
+
+// ── Recruitment Settings ──────────────────────────────────────
+let recruitmentCountdownInterval = null;
+
+async function loadRecruitment() {
+  const data = await api('GET', '/recruitment');
+  if (!data) return;
+
+  // Toggle
+  $('#rec-is-open').checked = Boolean(data.is_open);
+
+  // Closing date formatting for datetime-local
+  if (data.closing_date) {
+    const d = new Date(data.closing_date);
+    if (!isNaN(d.getTime())) {
+      const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      $('#rec-closing-date').value = localIso;
+    } else {
+      $('#rec-closing-date').value = '';
+    }
+  } else {
+    $('#rec-closing-date').value = '';
+  }
+
+  // Content
+  $('#rec-welcome-title').value = data.welcome_title || '';
+  $('#rec-welcome-message').value = data.welcome_message || '';
+  $('#rec-primary-text').value = data.primary_btn_text || 'Apply Now';
+  $('#rec-primary-url').value = data.primary_btn_url || '';
+
+  // Secondary Button
+  $('#rec-secondary-enabled').checked = Boolean(data.secondary_btn_enabled);
+  $('#rec-secondary-text').value = data.secondary_btn_text || '';
+  $('#rec-secondary-url').value = data.secondary_btn_url || '';
+  $('#rec-secondary-fields').style.display = data.secondary_btn_enabled ? 'grid' : 'none';
+
+  updateRecruitmentPreview();
+}
+
+function updateRecruitmentPreview() {
+  const isOpen = $('#rec-is-open').checked;
+  const dateVal = $('#rec-closing-date').value;
+  const banner = $('#recruitment-status-banner');
+  const title = $('#rec-status-title');
+  const detail = $('#rec-status-detail');
+  const badge = $('#rec-deadline-status-badge');
+  const countdownBox = $('#rec-countdown-box');
+  const countdownDisplay = $('#rec-countdown-display');
+
+  if (recruitmentCountdownInterval) {
+    clearInterval(recruitmentCountdownInterval);
+    recruitmentCountdownInterval = null;
+  }
+
+  let deadlineTime = null;
+  let isExpired = false;
+
+  if (dateVal) {
+    deadlineTime = new Date(dateVal).getTime();
+    if (isNaN(deadlineTime)) {
+      deadlineTime = null;
+    } else if (deadlineTime <= Date.now()) {
+      isExpired = true;
+    }
+  }
+
+  // Update deadline badge
+  if (!dateVal) {
+    badge.className = 'badge-deadline none';
+    badge.textContent = 'No deadline set (Indefinite)';
+  } else if (isExpired) {
+    badge.className = 'badge-deadline expired';
+    badge.textContent = '⚠️ Deadline has expired';
+  } else {
+    badge.className = 'badge-deadline valid';
+    const formatted = new Date(dateVal).toLocaleString();
+    badge.textContent = `✓ Closes on ${formatted}`;
+  }
+
+  // Determine overall status
+  const isEffectivelyActive = isOpen && !isExpired;
+
+  if (isEffectivelyActive) {
+    banner.className = 'recruitment-status-banner active';
+    title.textContent = '🟢 Recruitment is LIVE on Website';
+    if (deadlineTime) {
+      detail.textContent = 'Visible to students. Will automatically close when deadline arrives.';
+      countdownBox.style.display = 'block';
+
+      const tickCountdown = () => {
+        const remaining = Math.max(0, Math.floor((deadlineTime - Date.now()) / 1000));
+        if (remaining <= 0) {
+          updateRecruitmentPreview();
+          return;
+        }
+        const days = Math.floor(remaining / 86400);
+        const hours = Math.floor((remaining % 86400) / 3600);
+        const mins = Math.floor((remaining % 3600) / 60);
+        const secs = remaining % 60;
+        countdownDisplay.textContent = `${days}d ${String(hours).padStart(2,'0')}h ${String(mins).padStart(2,'0')}m ${String(secs).padStart(2,'0')}s`;
+      };
+      tickCountdown();
+      recruitmentCountdownInterval = setInterval(tickCountdown, 1000);
+    } else {
+      detail.textContent = 'Visible to students indefinitely until manually switched off.';
+      countdownBox.style.display = 'none';
+    }
+  } else {
+    banner.className = 'recruitment-status-banner closed';
+    countdownBox.style.display = 'none';
+
+    if (!isOpen && isExpired) {
+      title.textContent = '🔴 Recruitment is CLOSED (Toggle OFF & Deadline Expired)';
+      detail.textContent = 'Hidden from students. Enable the toggle and update the deadline to reopen.';
+    } else if (!isOpen) {
+      title.textContent = '🔴 Recruitment is CLOSED (Toggle is OFF)';
+      detail.textContent = 'Hidden from students. Turn the switch ON to activate the announcement on the website.';
+    } else if (isExpired) {
+      title.textContent = '⚠️ Recruitment is CLOSED (Deadline Expired)';
+      detail.textContent = 'Hidden from students because the closing date has passed, even though the toggle is ON. Extend the deadline to reopen.';
+    }
+  }
+}
+
+// Wire up events for recruitment form
+$('#rec-is-open').addEventListener('change', updateRecruitmentPreview);
+$('#rec-closing-date').addEventListener('input', updateRecruitmentPreview);
+$('#rec-clear-date-btn').addEventListener('click', () => {
+  $('#rec-closing-date').value = '';
+  updateRecruitmentPreview();
+  toast('Deadline cleared');
+});
+$('#rec-secondary-enabled').addEventListener('change', e => {
+  $('#rec-secondary-fields').style.display = e.target.checked ? 'grid' : 'none';
+});
+
+$('#save-recruitment-btn').addEventListener('click', async () => {
+  const saveBtn = $('#save-recruitment-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+
+  const dateVal = $('#rec-closing-date').value;
+  let closingIso = null;
+  if (dateVal) {
+    const d = new Date(dateVal);
+    if (!isNaN(d.getTime())) closingIso = d.toISOString();
+  }
+
+  const payload = {
+    is_open: $('#rec-is-open').checked ? 1 : 0,
+    welcome_title: $('#rec-welcome-title').value.trim(),
+    welcome_message: $('#rec-welcome-message').value.trim(),
+    primary_btn_text: $('#rec-primary-text').value.trim() || 'Apply Now',
+    primary_btn_url: $('#rec-primary-url').value.trim(),
+    secondary_btn_enabled: $('#rec-secondary-enabled').checked ? 1 : 0,
+    secondary_btn_text: $('#rec-secondary-text').value.trim(),
+    secondary_btn_url: $('#rec-secondary-url').value.trim(),
+    closing_date: closingIso
+  };
+
+  try {
+    const r = await api('PUT', '/recruitment', payload);
+    if (r && r.success) {
+      toast('Recruitment settings saved successfully! ✅');
+      updateRecruitmentPreview();
+    } else {
+      throw new Error((r && r.error) || 'Failed to save');
+    }
+  } catch (err) {
+    toast('Error saving settings: ' + err.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 Save Settings';
   }
 });
 

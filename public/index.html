@@ -34,6 +34,7 @@
         <li><a href="#seasons">Achievements</a></li>
         <li><a href="#sponsorship">Sponsors &amp; Partners</a></li>
         <li><a href="#contact">Contact</a></li>
+        <li><button class="nav-tour-pill" id="nav-tour-btn"><span class="tour-icon">✨</span> Tour</button></li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -56,6 +57,10 @@
       <div class="hero-actions">
         <a href="#machine" class="btn btn-primary" id="hero-cta-primary">Explore The Machine</a>
         <a href="#team" class="btn btn-secondary" id="hero-cta-secondary">Meet The Team</a>
+        <button type="button" class="btn btn-tour" id="start-tour-btn" aria-label="Start Interactive Tour">
+          <span class="tour-icon">🚀</span>
+          <span>Take a Tour</span>
+        </button>
       </div>
     </div>
     <div class="hero-scroll-hint">
@@ -156,6 +161,8 @@
       <h2>Our <span class="accent">Team</span></h2>
       <p>Driven by passion. United by innovation.</p>
     </div>
+
+    <div class="team-filters reveal" id="team-filters"></div>
 
     <div class="team-grid reveal" id="team-grid">
       <!-- Loaded from API -->
@@ -265,6 +272,9 @@
       <a href="#contact" class="btn btn-primary btn-large">Become a Partner</a>
       <p>Contact us to receive our full sponsorship package</p>
     </div>
+
+    <!-- ===== RECRUITMENT & ONBOARDING (Displayed ONLY when isOpen === true AND current time < closingDate) ===== -->
+    <div id="recruitment-showcase" class="recruitment-showcase reveal" style="display:none;"></div>
   </section>
 
   <hr class="section-divider">
@@ -380,6 +390,25 @@
       </div>
       <p class="sg-caption" id="sg-caption"></p>
       <div class="sg-dots" id="sg-dots"></div>
+    </div>
+  </div>
+
+  <!-- ===== INTERACTIVE TOUR OVERLAY ===== -->
+  <div id="tour-overlay" class="tour-overlay" style="display:none">
+    <div class="tour-card" id="tour-card">
+      <div class="tour-card-header">
+        <span class="tour-step-badge" id="tour-badge">🚀 Step 1 of 6</span>
+        <button class="tour-close-btn" id="tour-close-btn" aria-label="Close Tour">✕</button>
+      </div>
+      <h3 class="tour-title" id="tour-title"></h3>
+      <p class="tour-desc" id="tour-desc"></p>
+      <div class="tour-card-footer">
+        <button class="btn btn-secondary tour-btn-skip" id="tour-skip-btn">Skip</button>
+        <div class="tour-nav-group">
+          <button class="btn btn-secondary tour-btn-nav" id="tour-prev-btn">‹ Back</button>
+          <button class="btn btn-primary tour-btn-nav" id="tour-next-btn">Next ›</button>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -78,6 +78,7 @@ _db.serialize(() => {
     bio TEXT,
     image TEXT,
     linkedin TEXT,
+    academic_year TEXT DEFAULT 'year_1',
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
@@ -169,6 +170,19 @@ _db.serialize(() => {
     display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE
+  );
+  CREATE TABLE IF NOT EXISTS recruitment_settings (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    is_open INTEGER DEFAULT 0,
+    welcome_title TEXT DEFAULT 'Join the Z-FAST Electric Racing Team',
+    welcome_message TEXT DEFAULT 'We are looking for passionate students to join our engineering and management sub-teams. Dare to innovate and race with us!',
+    primary_btn_text TEXT DEFAULT 'Apply Now',
+    primary_btn_url TEXT DEFAULT 'https://forms.google.com',
+    secondary_btn_enabled INTEGER DEFAULT 0,
+    secondary_btn_text TEXT DEFAULT 'Recruitment Guide',
+    secondary_btn_url TEXT DEFAULT '#contact',
+    closing_date TEXT DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `);
 
@@ -287,6 +301,28 @@ _db.serialize(() => {
         ['Z-FAST Wins Best Design Award at FSAE 2024', 'Our team took home the prestigious Best Design Award at the Formula Student competition.', '', '', 'achievement'],
         ['New Battery System Achieves 600V Milestone', 'Our electrical team successfully tested the new 600V high-voltage system.', '', '', 'technical'],
       ].forEach(r => _db.run(n, r));
+    }
+  });
+
+  // ── Seed Recruitment Settings ───────────────────────────────
+  _db.get('SELECT id FROM recruitment_settings WHERE id = 1', (err, row) => {
+    if (!row) {
+      _db.run(`INSERT OR IGNORE INTO recruitment_settings (id, is_open, welcome_title, welcome_message, primary_btn_text, primary_btn_url, secondary_btn_enabled, secondary_btn_text, secondary_btn_url, closing_date) VALUES (1, 0, 'Join the Z-FAST Electric Racing Team', 'We are looking for passionate students to join our engineering and management sub-teams. Dare to innovate and race with us!', 'Apply Now', 'https://forms.google.com', 0, 'Recruitment Guide', '#contact', NULL)`);
+    }
+  });
+
+  // ── Migrate Team Members (Academic Year / Generation) ───────
+  _db.all("PRAGMA table_info(team_members)", (err, cols) => {
+    if (cols && !cols.some(c => c.name === 'academic_year')) {
+      _db.run("ALTER TABLE team_members ADD COLUMN academic_year TEXT DEFAULT 'year_1'", (aErr) => {
+        if (!aErr) {
+          console.log('✅ Migrated team_members: added academic_year column');
+          // Seed initial tiers based on roles if newly migrated
+          _db.run("UPDATE team_members SET academic_year = 'year_5' WHERE role LIKE '%Leader%' OR role LIKE '%Technical Head%' OR role LIKE '%Founder%'");
+          _db.run("UPDATE team_members SET academic_year = 'year_4' WHERE role LIKE '%Head%' AND role NOT LIKE '%Vice%' AND academic_year = 'year_1'");
+          _db.run("UPDATE team_members SET academic_year = 'year_3' WHERE role LIKE '%Vice Head%' AND academic_year = 'year_1'");
+        }
+      });
     }
   });
 

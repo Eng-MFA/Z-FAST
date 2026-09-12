@@ -296,26 +296,120 @@ function animateCounter(el) {
     requestAnimationFrame(step);
 }
 
+// ── Academic Year / 5-Year Milestone Tiers ──────────────────
+const YEAR_TIERS = {
+    year_5: {
+        key: 'year_5',
+        order: 5,
+        badgeText: '5th Year · Founder',
+        icon: '👑',
+        themeClass: 'tier-gold',
+        filterLabel: '👑 5th Year / Founders'
+    },
+    year_4: {
+        key: 'year_4',
+        order: 4,
+        badgeText: '4th Year · Senior',
+        icon: '⚡',
+        themeClass: 'tier-purple',
+        filterLabel: '⚡ 4th Year'
+    },
+    year_3: {
+        key: 'year_3',
+        order: 3,
+        badgeText: '3rd Year · Specialist',
+        icon: '⚙️',
+        themeClass: 'tier-cyan',
+        filterLabel: '⚙️ 3rd Year'
+    },
+    year_2: {
+        key: 'year_2',
+        order: 2,
+        badgeText: '2nd Year · Rising',
+        icon: '🚀',
+        themeClass: 'tier-emerald',
+        filterLabel: '🚀 2nd Year'
+    },
+    year_1: {
+        key: 'year_1',
+        order: 1,
+        badgeText: '1st Year · Pioneer',
+        icon: '🌱',
+        themeClass: 'tier-steel',
+        filterLabel: '🌱 1st Year'
+    }
+};
+
 // ── Load Team Members ───────────────────────────────────────
 async function loadTeam() {
     const members = await apiFetch('/api/team-members');
     if (!members) return;
     const grid = document.getElementById('team-grid');
     if (!grid) return;
-    
+    const filterContainer = document.getElementById('team-filters');
+    let activeFilter = 'all';
+
+    // Setup interactive filter pills if container exists
+    if (filterContainer) {
+        filterContainer.innerHTML = '';
+        const tierKeys = ['all', 'year_5', 'year_4', 'year_3', 'year_2', 'year_1'];
+        
+        tierKeys.forEach(key => {
+            const count = key === 'all'
+                ? members.length
+                : members.filter(m => (m.academic_year || 'year_1') === key).length;
+            
+            if (count === 0 && key !== 'all') return; // Skip empty tiers
+            
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `team-filter-pill ${key === activeFilter ? 'active' : ''} ${key !== 'all' ? YEAR_TIERS[key].themeClass : 'tier-all'}`;
+            const label = key === 'all' ? 'All Generations' : YEAR_TIERS[key].filterLabel;
+            btn.innerHTML = `<span class="pill-label">${label}</span><span class="pill-count">${count}</span>`;
+            
+            btn.addEventListener('click', () => {
+                activeFilter = key;
+                filterContainer.querySelectorAll('.team-filter-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderMembers();
+            });
+            
+            filterContainer.appendChild(btn);
+        });
+    }
+
     function renderMembers() {
         grid.style.opacity = '0';
         setTimeout(() => {
             grid.innerHTML = '';
-            members.forEach(m => {
+            const filtered = activeFilter === 'all'
+                ? members
+                : members.filter(m => (m.academic_year || 'year_1') === activeFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="team-empty-state"><p>No team members listed in this generation yet.</p></div>';
+                grid.style.opacity = '1';
+                return;
+            }
+
+            filtered.forEach(m => {
+                const yrKey = m.academic_year && YEAR_TIERS[m.academic_year] ? m.academic_year : 'year_1';
+                const tier = YEAR_TIERS[yrKey];
                 const initials = m.name.split(' ').map(w => w[0]).join('').slice(0, 2);
-                const card = el('div', 'member-card');
+                const card = el('div', `member-card ${tier.themeClass}`);
+                card.setAttribute('data-tier', yrKey);
+
                 const linkedinBadge = m.linkedin && m.linkedin !== '#'
                     ? `<a href="${m.linkedin}" class="member-linkedin-float" target="_blank" rel="noopener" title="View LinkedIn Profile" onclick="event.stopPropagation()">
                       <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>` : '';
+
                 card.innerHTML = `
           <div class="member-img-wrap">
+            <div class="member-year-badge ${tier.themeClass}">
+              <span class="badge-icon">${tier.icon}</span>
+              <span class="badge-txt">${tier.badgeText}</span>
+            </div>
             ${m.image ? `<img src="${API}${fixImg(m.image)}" alt="${m.name}" loading="lazy" />` : `<div class="member-avatar-placeholder">${initials}</div>`}
             <div class="member-hover-overlay"><p>${m.bio || 'Team member'}</p></div>
             ${linkedinBadge}
@@ -327,7 +421,7 @@ async function loadTeam() {
                 grid.appendChild(card);
             });
             grid.style.opacity = '1';
-        }, 200);
+        }, 180);
     }
     grid.style.transition = 'opacity 0.2s ease';
     renderMembers();
@@ -609,6 +703,336 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
     btn.disabled = false; btn.textContent = 'Send Message';
 });
 
+// ── Recruitment Announcement ──────────────────────────────
+let recCountdownTimer = null;
+let currentRecruitmentData = null;
+
+async function loadRecruitmentAnnouncement() {
+    const el = document.getElementById('recruitment-showcase');
+    if (!el) return;
+
+    if (recCountdownTimer) {
+        clearInterval(recCountdownTimer);
+        recCountdownTimer = null;
+    }
+
+    const data = await apiFetch('/api/recruitment');
+    if (!data) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        currentRecruitmentData = null;
+        return;
+    }
+
+    currentRecruitmentData = data;
+
+    // Strict validation: Both conditions must be met!
+    // 1. Toggle in admin isOpen === true
+    // 2. Current time has not passed closingDate
+    const now = Date.now();
+    let isExpired = false;
+    let deadlineTime = null;
+
+    if (data.closing_date) {
+        deadlineTime = new Date(data.closing_date).getTime();
+        if (!isNaN(deadlineTime) && deadlineTime <= now) {
+            isExpired = true;
+        }
+    }
+
+    const isVisible = Boolean(data.is_open) && !isExpired;
+
+    if (!isVisible) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+    }
+
+    // Build the countdown HTML if deadline is configured
+    let countdownHTML = '';
+    if (deadlineTime && !isExpired) {
+        countdownHTML = `
+            <div class="rec-countdown-group" id="rec-live-countdown">
+                <div class="rec-cd-item">
+                    <span class="rec-cd-num" id="rec-days">00</span>
+                    <span class="rec-cd-lbl">Days</span>
+                </div>
+                <div class="rec-cd-item">
+                    <span class="rec-cd-num" id="rec-hours">00</span>
+                    <span class="rec-cd-lbl">Hours</span>
+                </div>
+                <div class="rec-cd-item">
+                    <span class="rec-cd-num" id="rec-mins">00</span>
+                    <span class="rec-cd-lbl">Mins</span>
+                </div>
+                <div class="rec-cd-item">
+                    <span class="rec-cd-num" id="rec-secs">00</span>
+                    <span class="rec-cd-lbl">Secs</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Secondary button HTML
+    let secondaryBtnHTML = '';
+    if (data.secondary_btn_enabled && data.secondary_btn_text && data.secondary_btn_url) {
+        const isExt = data.secondary_btn_url.startsWith('http');
+        secondaryBtnHTML = `
+            <a href="${data.secondary_btn_url}" class="rec-btn-secondary" ${isExt ? 'target="_blank" rel="noopener"' : ''}>
+                <span>${data.secondary_btn_text}</span>
+            </a>
+        `;
+    }
+
+    // Deadline formatted text
+    let deadlineText = '';
+    if (deadlineTime) {
+        const dStr = new Date(deadlineTime).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        deadlineText = `
+            <div class="rec-footer-meta">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Applications close on: <strong>${dStr}</strong></span>
+            </div>
+        `;
+    }
+
+    const title = data.welcome_title || 'Join the Z-FAST Electric Racing Team';
+    const message = data.welcome_message || 'We are looking for ambitious students passionate about EV motorsport technology and innovation.';
+    const primaryText = data.primary_btn_text || 'Apply Now';
+    const primaryUrl = data.primary_btn_url || '#contact';
+    const isPrimaryExt = primaryUrl.startsWith('http');
+
+    el.innerHTML = `
+        <div class="recruitment-box">
+            <div class="recruitment-inner">
+                <div class="rec-header-row">
+                    <div class="rec-badge-wrap">
+                        <div class="rec-pulse-pill">
+                            <span class="rec-pulse-dot"></span>
+                            <span>Applications Open / باب التقديم مفتوح</span>
+                        </div>
+                    </div>
+                    ${countdownHTML}
+                </div>
+
+                <div class="rec-body-content">
+                    <h2 class="rec-headline">${title}</h2>
+                    <p class="rec-description">${message}</p>
+                </div>
+
+                <div class="rec-actions">
+                    <a href="${primaryUrl}" class="rec-btn-primary" ${isPrimaryExt ? 'target="_blank" rel="noopener"' : ''}>
+                        <span>⚡ ${primaryText}</span>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    ${secondaryBtnHTML}
+                </div>
+
+                ${deadlineText}
+            </div>
+        </div>
+    `;
+
+    el.style.display = 'block';
+
+    // Start live countdown interval
+    if (deadlineTime && !isExpired) {
+        const updateTick = () => {
+            const diff = deadlineTime - Date.now();
+            if (diff <= 0) {
+                // Deadline passed while user was viewing page: auto-close
+                if (recCountdownTimer) clearInterval(recCountdownTimer);
+                el.style.display = 'none';
+                el.innerHTML = '';
+                return;
+            }
+
+            const totalSecs = Math.floor(diff / 1000);
+            const days = Math.floor(totalSecs / 86400);
+            const hours = Math.floor((totalSecs % 86400) / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+            const secs = totalSecs % 60;
+
+            const dEl = document.getElementById('rec-days');
+            const hEl = document.getElementById('rec-hours');
+            const mEl = document.getElementById('rec-mins');
+            const sEl = document.getElementById('rec-secs');
+
+            if (dEl) dEl.textContent = String(days).padStart(2, '0');
+            if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+            if (mEl) mEl.textContent = String(mins).padStart(2, '0');
+            if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+        };
+
+        updateTick();
+        recCountdownTimer = setInterval(updateTick, 1000);
+    }
+}
+
+// ── Interactive Tour ──────────────────────────────────────────
+function initInteractiveTour() {
+    const overlay = document.getElementById('tour-overlay');
+    const badge = document.getElementById('tour-badge');
+    const title = document.getElementById('tour-title');
+    const desc = document.getElementById('tour-desc');
+    const prevBtn = document.getElementById('tour-prev-btn');
+    const nextBtn = document.getElementById('tour-next-btn');
+    const skipBtn = document.getElementById('tour-skip-btn');
+    const closeBtn = document.getElementById('tour-close-btn');
+
+    if (!overlay) return;
+
+    let currentStep = 0;
+    let tourSteps = [];
+
+    function buildSteps() {
+        const hasRecruitment = currentRecruitmentData &&
+            currentRecruitmentData.is_open &&
+            (!currentRecruitmentData.closing_date || new Date(currentRecruitmentData.closing_date).getTime() > Date.now());
+
+        const baseSteps = [
+            {
+                target: '#hero',
+                title: '⚡ Welcome to Z-FAST Racing',
+                desc: 'Egypt\'s premier university electric racing team, developing cutting-edge high-voltage Formula Student electric cars.',
+            },
+            {
+                target: '#about',
+                title: '🏎️ About Our Culture & Vision',
+                desc: 'Driven by innovation, pushing clean EV technology forward, and empowering passionate student engineers.',
+            },
+            {
+                target: '#machine',
+                title: '⚙️ The Machine (Engineering Excellence)',
+                desc: 'Explore custom battery modules, aerodynamic carbon packages, and precision motor controllers engineered from scratch.',
+            },
+            {
+                target: '#team',
+                title: '👥 Multidisciplinary Sub-Teams',
+                desc: 'Meet our student leaders across Electrical, Mechanical, Software, Telemetry, and Management departments.',
+            },
+            {
+                target: '#seasons',
+                title: '🏆 Achievements & Track Records',
+                desc: 'National championship awards, endurance records, and prestigious Formula Student honors.',
+            },
+            {
+                target: '#sponsorship',
+                title: '🤝 Sponsors & Partners',
+                desc: 'Our partners who power our engineering breakthroughs and race victories.',
+            }
+        ];
+
+        if (hasRecruitment) {
+            baseSteps.push({
+                target: '#recruitment-showcase',
+                title: '🎯 Recruitment is OPEN — Join the Team!',
+                desc: 'The journey begins here! We are actively recruiting new members. Submit your application now and race into the future with Z-FAST.',
+                isFinalRecruitment: true
+            });
+        }
+
+        return baseSteps.map((s, idx) => ({
+            ...s,
+            badge: `Step ${idx + 1} of ${baseSteps.length}`
+        }));
+    }
+
+    function removeHighlight() {
+        document.querySelectorAll('.tour-highlight-active').forEach(el => {
+            el.classList.remove('tour-highlight-active');
+        });
+    }
+
+    function renderStep(idx) {
+        if (idx < 0 || idx >= tourSteps.length) {
+            closeTour();
+            return;
+        }
+
+        currentStep = idx;
+        const step = tourSteps[currentStep];
+
+        badge.textContent = step.badge;
+        title.textContent = step.title;
+        desc.textContent = step.desc;
+
+        prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+        
+        if (currentStep === tourSteps.length - 1) {
+            nextBtn.textContent = step.isFinalRecruitment ? 'Apply Now ⚡' : 'Finish Tour ✓';
+        } else {
+            nextBtn.textContent = 'Next Step ›';
+        }
+
+        removeHighlight();
+
+        const targetEl = document.querySelector(step.target);
+        if (targetEl) {
+            targetEl.classList.add('tour-highlight-active');
+            const navH = 80;
+            const top = targetEl.getBoundingClientRect().top + window.pageYOffset - navH;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        }
+    }
+
+    function startTour() {
+        tourSteps = buildSteps();
+        currentStep = 0;
+        overlay.style.display = 'block';
+        renderStep(0);
+    }
+
+    function closeTour() {
+        overlay.style.display = 'none';
+        removeHighlight();
+    }
+
+    function handleNext() {
+        if (currentStep === tourSteps.length - 1) {
+            const step = tourSteps[currentStep];
+            if (step.isFinalRecruitment) {
+                const applyBtn = document.querySelector('.rec-btn-primary');
+                if (applyBtn) {
+                    applyBtn.click();
+                }
+            }
+            closeTour();
+        } else {
+            renderStep(currentStep + 1);
+        }
+    }
+
+    function handlePrev() {
+        if (currentStep > 0) {
+            renderStep(currentStep - 1);
+        }
+    }
+
+    nextBtn.addEventListener('click', handleNext);
+    prevBtn.addEventListener('click', handlePrev);
+    skipBtn.addEventListener('click', closeTour);
+    closeBtn.addEventListener('click', closeTour);
+
+    document.addEventListener('keydown', e => {
+        if (overlay.style.display !== 'none') {
+            if (e.key === 'Escape') closeTour();
+            else if (e.key === 'ArrowRight') handleNext();
+            else if (e.key === 'ArrowLeft') handlePrev();
+        }
+    });
+
+    // Wire trigger buttons
+    const heroBtn = document.getElementById('start-tour-btn');
+    if (heroBtn) heroBtn.addEventListener('click', startTour);
+
+    const navBtn = document.getElementById('nav-tour-btn');
+    if (navBtn) navBtn.addEventListener('click', startTour);
+}
+
 // ── Init ────────────────────────────────────────────────────
 (async function init() {
     await Promise.all([
@@ -621,8 +1045,10 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
         loadMediaCoverage(),
         loadSeasons(),
         loadNews(),
+        loadRecruitmentAnnouncement(),
     ]);
     observeReveals();
+    initInteractiveTour();
     const currentYearEl = document.getElementById('current-year');
     if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
 

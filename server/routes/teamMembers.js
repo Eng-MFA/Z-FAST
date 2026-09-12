@@ -17,21 +17,21 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', requireAuth, async (req, res) => {
-    const { name, role, bio, image, linkedin, display_order } = req.body;
+    const { name, role, bio, image, linkedin, display_order, academic_year } = req.body;
     try {
         const r = await db.prepare(
-            'INSERT INTO team_members (name,role,department,bio,image,linkedin,display_order) VALUES (?,?,?,?,?,?,?)'
-        ).run(name, role, 'Technical', bio || '', image || '', linkedin || '', display_order || 0);
+            'INSERT INTO team_members (name,role,department,bio,image,linkedin,display_order,academic_year) VALUES (?,?,?,?,?,?,?,?)'
+        ).run(name, role, 'Technical', bio || '', image || '', linkedin || '', display_order || 0, academic_year || 'year_1');
         res.status(201).json({ id: r.lastInsertRowid });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.put('/:id', requireAuth, async (req, res) => {
-    const { name, role, bio, image, linkedin, display_order } = req.body;
+    const { name, role, bio, image, linkedin, display_order, academic_year } = req.body;
     try {
         await db.prepare(
-            'UPDATE team_members SET name=?,role=?,bio=?,image=?,linkedin=?,display_order=? WHERE id=?'
-        ).run(name, role, bio, image, linkedin, display_order ?? 0, req.params.id);
+            'UPDATE team_members SET name=?,role=?,bio=?,image=?,linkedin=?,display_order=?,academic_year=? WHERE id=?'
+        ).run(name, role, bio, image, linkedin, display_order ?? 0, academic_year || 'year_1', req.params.id);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
